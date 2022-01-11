@@ -3,7 +3,7 @@ import os
 import subprocess
 import shlex
 
-def generate_raw_data(file_path:str, settings_file:str):    
+def generate_raw_data(file_path:str, settings_file:str, base_path:str):    
 
     if not os.path.exists(file_path):
         raise Exception("the log-file you are trying to parse does not exist.")
@@ -11,9 +11,8 @@ def generate_raw_data(file_path:str, settings_file:str):
     if not os.path.exists(settings_file):
         print(settings_file)
         raise Exception("the ELITE INSIGHTS settings-file you are trying to load does not exist.")
-    
-    current_dir = os.getcwd()
-    ie_binary = os.path.join(current_dir, r'GW2EI\GuildWars2EliteInsights.exe')
+        
+    ie_binary = os.path.join(base_path, r'GW2EI\GuildWars2EliteInsights.exe')
     
     if not os.path.exists(ie_binary):
         raise Exception("Could not find the Elite Insights binary at the specified path.")

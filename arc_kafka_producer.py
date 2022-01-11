@@ -8,7 +8,7 @@ from json import loads, dumps
 
 def produce_message(bootstrap_servers, topic_name):
     k_producer = KafkaProducer(bootstrap_servers=bootstrap_servers, value_serializer=lambda x: dumps(x).encode('utf-8'))
-    k_producer.send(topic_name, value={'1': 'test'})
+    k_producer.send(topic_name, value={'logname': 'path-to-json-file'})
 
 
 def main():

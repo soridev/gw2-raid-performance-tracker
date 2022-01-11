@@ -133,3 +133,4 @@ config.ini
 .vscode
 GW2EI
 resources
+config/custom-settings.conf

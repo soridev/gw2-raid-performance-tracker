@@ -6,7 +6,7 @@ from json import loads
 
 def consume_messages():
     k_consumer = KafkaConsumer('arclogs',
-                               bootstrap_servers=['localhost:29092', 'localhost:39092'],
+                               bootstrap_servers=['<string>', '<string>'],
                                auto_offset_reset='earliest',
                                enable_auto_commit=True,
                                consumer_timeout_ms=1000,

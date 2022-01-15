@@ -1,0 +1,2 @@
+- [ ] add exception handling to kafka-producer
+- [ ] add basic logging and loghandler for basic info and error messages

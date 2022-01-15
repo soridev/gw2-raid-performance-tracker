@@ -1,2 +1,3 @@
 - [ ] add exception handling to kafka-producer
 - [ ] add basic logging and loghandler for basic info and error messages
+- [ ] update readme.md to have the information about the backend setup

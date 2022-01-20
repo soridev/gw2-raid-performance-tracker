@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 import sys
 import configparser
@@ -69,18 +70,19 @@ class Handler(FileSystemEventHandler):
                 )
 
             # push info into kafka stream
-            kafka_message = {
-                "input-file": event.src_path,
-                "ei-json-file": json_result_file,
-            }
-            kafka_bootstrap_servers = ConfigHelper().get_config_item(
-                "kafka",
-                "BootstrapServers",
-            )
+            kafka_bootstrap_servers = ConfigHelper().get_kafka_bootstrap_servers()
             arc_topic = ConfigHelper().get_config_item(
                 "kafka",
                 "ArcTopic",
             )
+
+            # crate a message for the kafka stream
+            kafka_message = {
+                "id": time.time(),
+                "input-file": event.src_path,
+                "ei-json-file": json_result_file,
+            }
+
             produce_message(kafka_bootstrap_servers, arc_topic, kafka_message)
 
             print("successfuly pushed message into kafka stream.")

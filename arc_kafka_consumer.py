@@ -30,8 +30,10 @@ def main():
     config.read(os.path.join(base_path, "config.ini"))
 
     # load settings for kafka infrastructure from settings file
-    kafka_bootstrap_servers = loads(config["kafka"]["BootstrapServers"])
-    arc_topic = config.get("kafka", "ArcTopic")
+    kafka_bootstrap_servers = ConfigHelper().get_config_item(
+        "kafka", "BootstrapServers"
+    )
+    arc_topic = ConfigHelper().get_config_item("kafka", "ArcTopic")
 
     consume_messages(kafka_bootstrap_servers, arc_topic)
 

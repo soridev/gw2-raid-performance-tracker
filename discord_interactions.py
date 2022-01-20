@@ -1,5 +1,3 @@
-from dis import dis
-from msilib.schema import RadioButton
 import sys
 import os
 import configparser

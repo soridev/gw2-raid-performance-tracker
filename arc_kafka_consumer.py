@@ -1,12 +1,12 @@
 import sys
 import os
+import configparser
 from kafka import KafkaConsumer, KafkaProducer
 from json import loads
 
-
-def consume_messages():
-    k_consumer = KafkaConsumer('arclogs',
-                               bootstrap_servers=['<string>', '<string>'],
+def consume_messages(bt_servers, kafka_topic):
+    k_consumer = KafkaConsumer(kafka_topic,
+                               bootstrap_servers=bt_servers,
                                auto_offset_reset='earliest',
                                enable_auto_commit=True,
                                consumer_timeout_ms=1000,
@@ -20,7 +20,15 @@ def consume_messages():
         print(str(info))
 
 def main():
-    consume_messages()
+    base_path = os.path.dirname(__file__)    
+    config = configparser.ConfigParser()
+    config.read(os.path.join(base_path, 'config.ini'))            
+
+    # load settings for kafka infrastructure from settings file
+    kafka_bootstrap_servers = loads(config['kafka']['BootstrapServers'])    
+    arc_topic = config.get("kafka", "ArcTopic")
+
+    consume_messages(kafka_bootstrap_servers, arc_topic)
 
 if __name__ == "__main__":
     main()

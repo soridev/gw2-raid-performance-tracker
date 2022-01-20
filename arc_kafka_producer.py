@@ -70,10 +70,10 @@ class Handler(FileSystemEventHandler):
             pass
 
 
-
 def produce_message(bootstrap_servers, topic_name, message):
     k_producer = KafkaProducer(bootstrap_servers=bootstrap_servers, value_serializer=lambda x: dumps(x).encode('utf-8'))
-    k_producer.send(topic_name, value={'logname': 'path-to-json-file'})
+    k_producer.send(topic_name, value=message)
+
 
 def find_file_by_name(name, path):
     result = []    

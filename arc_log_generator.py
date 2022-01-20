@@ -2,6 +2,7 @@ import sys
 import os
 import subprocess
 import shlex
+import configparser
 
 def generate_raw_data(file_path:str, settings_file:str, base_path:str):    
 

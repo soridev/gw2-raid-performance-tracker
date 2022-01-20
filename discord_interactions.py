@@ -26,16 +26,15 @@ class RaidHelperClient(discord.Client):
 
     @tasks.loop(seconds=60)  # task runs every 60 seconds
     async def my_background_task(self):
-        print(self.test_channel_token)
+
+        # testing for discord embed
         channel = self.get_channel(self.test_channel_token)  # channel ID goes here
 
         discord_embed = discord.Embed(
             title="[ZETA] Raid clear - 20/01/2022", color=0x00FDFD
         )
         discord_embed.add_field(
-            name="W1",
-            value="Vale Guardian\nGorseval\nSabetha - [log](https://dps.report/YIp5-20210531-214808_adina)",
-            inline=True,
+            name="W1", value="Vale Guardian\nGorseval\nSabetha", inline=True
         )
         discord_embed.add_field(
             name="W2", value="Vale Guardian\nGorseval\nSabetha", inline=True

@@ -4,6 +4,8 @@ import configparser
 from kafka import KafkaConsumer, KafkaProducer
 from json import loads
 
+from config_helper import ConfigHelper
+
 def consume_messages(bt_servers, kafka_topic):
     k_consumer = KafkaConsumer(kafka_topic,
                                bootstrap_servers=bt_servers,

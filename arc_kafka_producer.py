@@ -3,15 +3,13 @@ import sys
 import configparser
 import os
 import time
-
 import kafka
-
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from kafka import KafkaConsumer, KafkaProducer
 from json import loads, dumps
-
 from arc_log_generator import generate_raw_data
+from config_helper import ConfigHelper
 
 
 class ArcWatchDog:
@@ -48,6 +46,13 @@ class Handler(FileSystemEventHandler):
             print("Found newly created file:  % s." % event.src_path)
 
             # generate json file with elite insights parser
+            ei_settings_file = os.path.join(
+                base_path,
+                ConfigHelper().get_config_item(
+                    "elite-insights",
+                    "ei_config_file",
+                ),
+            )
             generate_raw_data(event.src_path, ei_settings_file, base_path)
             input_file_name = str.split(os.path.basename(event.src_path), ".")[0]
 
@@ -68,6 +73,14 @@ class Handler(FileSystemEventHandler):
                 "input-file": event.src_path,
                 "ei-json-file": json_result_file,
             }
+            kafka_bootstrap_servers = ConfigHelper().get_config_item(
+                "kafka",
+                "BootstrapServers",
+            )
+            arc_topic = ConfigHelper().get_config_item(
+                "kafka",
+                "ArcTopic",
+            )
             produce_message(kafka_bootstrap_servers, arc_topic, kafka_message)
 
             print("successfuly pushed message into kafka stream.")
@@ -99,21 +112,10 @@ def main():
     global base_path
     base_path = os.path.dirname(__file__)
 
-    config = configparser.ConfigParser()
-    config.read(os.path.join(base_path, "config.ini"))
-
-    # load kafka config from file
-    global ei_settings_file
-    global arc_base_dir
-    global kafka_bootstrap_servers
-    global arc_topic
-
-    kafka_bootstrap_servers = loads(config["kafka"]["BootstrapServers"])
-    arc_topic = config.get("kafka", "ArcTopic")
-    ei_settings_file = os.path.join(
-        base_path, config.get("elite-insights", "ei_config_file")
+    arc_base_dir = ConfigHelper().get_config_item(
+        "elite-insights",
+        "logfolder",
     )
-    arc_base_dir = config.get("elite-insights", "logfolder")
 
     # start filesystem watcher
     wd = ArcWatchDog(arc_base_dir)

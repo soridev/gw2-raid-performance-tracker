@@ -5,6 +5,7 @@ import configparser
 import discord
 from discord.ext import commands
 from discord.ext import tasks
+from matplotlib.pyplot import title
 
 from config_helper import ConfigHelper
 
@@ -27,6 +28,11 @@ class RaidHelperClient(discord.Client):
     async def my_background_task(self):
         print(self.test_channel_token)
         channel = self.get_channel(self.test_channel_token)  # channel ID goes here
+
+        discord_embed = discord.Embed(
+            title="[ZETA] Raid clear - 20/01/2022", color="#00fdfd"
+        )
+
         await channel.send("test message")
 
     @my_background_task.before_loop

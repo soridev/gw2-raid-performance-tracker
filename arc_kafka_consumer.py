@@ -25,10 +25,6 @@ def consume_messages(bt_servers, kafka_topic):
 
 
 def main():
-    base_path = os.path.dirname(__file__)
-    config = configparser.ConfigParser()
-    config.read(os.path.join(base_path, "config.ini"))
-
     # load settings for kafka infrastructure from settings file
     kafka_bootstrap_servers = ConfigHelper().get_config_item(
         "kafka", "BootstrapServers"

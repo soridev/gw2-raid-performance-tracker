@@ -28,9 +28,9 @@ class ArcWatchDog:
         try:
             while True:
                 time.sleep(5)
-        except:
+        except Exception as err:
             self.observer.stop()
-            print("stopped watching.")
+            print("stopped watching.\n" + str(err))
 
         self.observer.join()
 

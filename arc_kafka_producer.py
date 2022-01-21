@@ -1,14 +1,9 @@
-from datetime import datetime
-import json
-import sys
-import configparser
 import os
 import time
-import kafka
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from kafka import KafkaConsumer, KafkaProducer
-from json import loads, dumps
+from kafka import KafkaProducer
+from json import dumps
 from arc_log_generator import generate_raw_data
 from config_helper import ConfigHelper
 

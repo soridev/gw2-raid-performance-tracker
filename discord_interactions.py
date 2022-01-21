@@ -1,11 +1,6 @@
-import sys
-import os
-import configparser
-
 import discord
 from discord.ext import commands
 from discord.ext import tasks
-from matplotlib.pyplot import title
 
 from config_helper import ConfigHelper
 

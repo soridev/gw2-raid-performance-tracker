@@ -1,4 +1,3 @@
-from cmath import log
 import os
 import psycopg2
 import datetime

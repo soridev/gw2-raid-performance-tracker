@@ -6,6 +6,9 @@ import json
 import hashlib
 
 from config_helper import ConfigHelper
+from application_logging import init_logger
+
+logger = init_logger()
 
 
 class ArcDataTransformator:
@@ -41,7 +44,7 @@ class ArcDataTransformator:
             raise Exception("Given .json file does not exist.")
 
         if evtc_name in self.known_input_files:
-            print(
+            logger.info(
                 f"The given input file ({path_to_json_file}) is already registered into the database"
             )
 
@@ -54,7 +57,7 @@ class ArcDataTransformator:
             try:
                 log_data = json.load(jsonfile)
             except Exception as err:
-                print(f"error while loading json from jsonfile: {str(err)}")
+                logger.info(f"error while loading json from jsonfile: {str(err)}")
 
         # basic data from log
         file_source = evtc_name
@@ -171,7 +174,7 @@ def main():
         upload=False,
     )
 
-    print(f_id)
+    logger.info(f_id)
 
 
 if __name__ == "__main__":

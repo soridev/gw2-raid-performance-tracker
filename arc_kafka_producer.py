@@ -6,6 +6,9 @@ from kafka import KafkaProducer
 from json import dumps
 from arc_log_generator import generate_raw_data
 from config_helper import ConfigHelper
+from application_logging import init_logger
+
+logger = init_logger()
 
 
 class ArcWatchDog:
@@ -26,7 +29,7 @@ class ArcWatchDog:
                 time.sleep(5)
         except Exception as err:
             self.observer.stop()
-            print("stopped watching.\n" + str(err))
+            logger.info("stopped watching.\n" + str(err))
 
         self.observer.join()
 
@@ -39,7 +42,7 @@ class Handler(FileSystemEventHandler):
 
         elif event.event_type == "created":
             # Event is created, you can process it now
-            print("Found newly created file:  % s." % event.src_path)
+            logger.info("Found newly created file:  % s." % event.src_path)
 
             # generate json file with elite insights parser
             ei_settings_file = os.path.join(
@@ -80,7 +83,7 @@ class Handler(FileSystemEventHandler):
 
             produce_message(kafka_bootstrap_servers, arc_topic, kafka_message)
 
-            print("successfuly pushed message into kafka stream.")
+            logger.info("successfuly pushed message into kafka stream.")
 
         elif event.event_type == "modified":
             # Event is modified, you can process it now

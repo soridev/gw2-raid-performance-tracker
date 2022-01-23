@@ -4,6 +4,9 @@ from json import loads
 
 from config_helper import ConfigHelper
 from arc_data_transformator import ArcDataTransformator
+from application_logging import init_logger
+
+logger = init_logger()
 
 
 def consume_messages(bt_servers, kafka_topic):
@@ -16,14 +19,14 @@ def consume_messages(bt_servers, kafka_topic):
         value_deserializer=lambda x: loads(x.decode("utf-8")),
     )
 
-    print("Starting kafka consumer - waiting for new messages.")
+    logger.info("Starting kafka consumer - waiting for new messages.")
 
     new_log_ids = []
     ark_transformator = ArcDataTransformator()
 
     for message in k_consumer:
         message_content = message.value
-        print(message_content["id"])
+        logger.info(message_content["id"])
 
         log_id = ark_transformator.register_arclog_into_db(
             evtc_name=message_content["input-file"],
@@ -32,7 +35,7 @@ def consume_messages(bt_servers, kafka_topic):
 
         new_log_ids.append(log_id)
 
-    print(f"{len(new_log_ids)} new logs added to database.")
+    logger.info(f"{len(new_log_ids)} new logs added to database.")
 
 
 def run_consumer():

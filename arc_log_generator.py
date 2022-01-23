@@ -26,6 +26,8 @@ def generate_raw_data(file_path: str, settings_file: str, base_path: str):
             "Could not find the Elite Insights binary at the specified path."
         )
 
+    logger.info(f"Parsing .json from input file: {str(file_path)}")
+
     cmd = f'{ie_binary} -c "{settings_file}" "{file_path}"'
     cmd = cmd.replace("\\", "/")
 

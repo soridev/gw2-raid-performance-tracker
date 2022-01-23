@@ -1,3 +1,4 @@
+from cmath import log
 from os import path
 from kafka import KafkaConsumer
 from json import loads
@@ -20,22 +21,20 @@ def consume_messages(bt_servers, kafka_topic):
     )
 
     logger.info("Starting kafka consumer - waiting for new messages.")
-
-    new_log_ids = []
     ark_transformator = ArcDataTransformator()
 
     for message in k_consumer:
         message_content = message.value
-        logger.info(message_content["id"])
+
+        logger.info("Registering new file into database")
 
         log_id = ark_transformator.register_arclog_into_db(
             evtc_name=message_content["input-file"],
             path_to_json_file=message_content["ei-json-file"],
         )
 
-        new_log_ids.append(log_id)
-
-    logger.info(f"{len(new_log_ids)} new logs added to database.")
+        if log_id:
+            logger.info(f"Registered new log with id: {str(log_id)}")
 
 
 def run_consumer():

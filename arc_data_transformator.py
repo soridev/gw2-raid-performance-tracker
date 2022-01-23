@@ -177,6 +177,7 @@ class ArcDataTransformator:
             self.db_connection.commit()
 
             # cleanup file after usage.
+            logger.info(f"removing .json file: {str(path_to_json_file)}")
             os.remove(path_to_json_file)
 
             return log_id

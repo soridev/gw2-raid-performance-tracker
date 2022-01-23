@@ -83,7 +83,9 @@ class Handler(FileSystemEventHandler):
 
             produce_message(kafka_bootstrap_servers, arc_topic, kafka_message)
 
-            logger.info("successfuly pushed message into kafka stream.")
+            logger.info(
+                f"successfuly pushed message into kafka [topic => {str(arc_topic)}]."
+            )
 
         elif event.event_type == "modified":
             # Event is modified, you can process it now
@@ -118,6 +120,7 @@ def run_producer():
     )
 
     # start filesystem watcher
+    logger.info("Starting filesystem monitoring for kafka producer.")
     wd = ArcWatchDog(arc_base_dir)
     wd.run()
 

@@ -105,7 +105,7 @@ def find_file_by_name(name, path):
     return result
 
 
-def main():
+def run_producer():
     global base_path
     base_path = os.path.dirname(__file__)
 
@@ -117,6 +117,11 @@ def main():
     # start filesystem watcher
     wd = ArcWatchDog(arc_base_dir)
     wd.run()
+
+
+def main():
+    # start the producer
+    run_producer()
 
 
 if __name__ == "__main__":

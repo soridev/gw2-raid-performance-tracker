@@ -152,6 +152,9 @@ class ArcDataTransformator:
             self.known_input_files.append(evtc_name)
             self.db_connection.commit()
 
+            # cleanup file after usage.
+            os.remove(path_to_json_file)
+
             return log_id
 
         except Exception as err:

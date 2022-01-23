@@ -11,7 +11,7 @@ def consume_messages(bt_servers, kafka_topic):
         kafka_topic,
         bootstrap_servers=bt_servers,
         auto_offset_reset="latest",
-        enable_auto_commit=False,
+        enable_auto_commit=True,
         # consumer_timeout_ms=1000,
         value_deserializer=lambda x: loads(x.decode("utf-8")),
     )
@@ -35,12 +35,16 @@ def consume_messages(bt_servers, kafka_topic):
     print(f"{len(new_log_ids)} new logs added to database.")
 
 
-def main():
-    # load settings for kafka infrastructure from settings file
+def run_consumer():
     kafka_bootstrap_servers = ConfigHelper().get_kafka_bootstrap_servers()
     arc_topic = ConfigHelper().get_config_item("kafka", "ArcTopic")
 
     consume_messages(kafka_bootstrap_servers, arc_topic)
+
+
+def main():
+    # start the kafka consumer.
+    run_consumer()
 
 
 if __name__ == "__main__":

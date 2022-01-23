@@ -5,8 +5,13 @@ import threading
 
 import kafka
 
+from config_helper import ConfigHelper
+
 from arc_kafka_consumer import run_consumer
 from arc_kafka_producer import run_producer
+
+from arc_log_generator import generate_raw_data
+from arc_data_transformator import ArcDataTransformator
 
 
 class ThreadManger:
@@ -22,6 +27,9 @@ class ThreadManger:
         self.full_log_load = full_log_load
 
     def run_application(self):
+
+        if self.full_log_load:
+            self.full_log_load()
 
         # start actions from here and do extra actiopns if specified
         kafka_arc_consumer_thread = threading.Thread(
@@ -39,10 +47,28 @@ class ThreadManger:
         if self.with_discord:
             pass
 
+    def load_all_logs(self):
+        base_path = os.path.dirname(__file__)
+        arc_base_dir = ConfigHelper().get_config_item(
+            "elite-insights",
+            "logfolder",
+        )
+
+        adt = ArcDataTransformator()
+        unknown_files = []
+
+        for root, directories, files in os.walk(arc_base_dir):
+            for file in files:
+                if file.endswith(".zevtc") and file not in adt.known_input_files:
+                    unknown_files.append(os.path.join(root, file))
+
+        print(len(unknown_files))
+
 
 def main():
     tm = ThreadManger()
-    tm.run_application()
+    # tm.run_application()
+    tm.load_all_logs()
 
 
 if __name__ == "__main__":

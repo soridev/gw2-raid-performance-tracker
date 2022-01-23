@@ -23,16 +23,37 @@ class ArcDataTransformator:
         )
 
         self.db_connection.autocommit = True
-        self.known_input_files = []
+        self.known_input_files = self.get_known_files()
+        self.arc_raid_folders = []
 
         # fetch already registered inputfiles
+
+    def get_known_files(self):
+        known_input_files = []
+
         cursor = self.db_connection.cursor()
         cursor.execute(
             "select input_file from ark_core.raid_kill_times rkt group by input_file"
         )
 
         for line in cursor.fetchall():
-            self.known_input_files.append(line[0])
+            known_input_files.append(line[0])
+
+        self.db_connection.commit()
+
+        return known_input_files
+
+    def get_arc_folder_names(self):
+        folders = []
+        cursor = self.db_connection.cursor()
+
+        sql = "select ark_folder_name from ark_core.raid_encounters"
+        cursor.execute(sql)
+
+        for line in cursor.fetchall():
+            folders.append(line[0])
+
+        return folders
 
     def register_arclog_into_db(
         self, evtc_name: str, path_to_json_file: str, upload: bool = False

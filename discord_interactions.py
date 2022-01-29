@@ -3,6 +3,9 @@ from discord.ext import commands
 from discord.ext import tasks
 
 from config_helper import ConfigHelper
+from application_logging import init_logger
+
+logger = init_logger()
 
 
 class RaidHelperClient(discord.Client):
@@ -21,6 +24,13 @@ class RaidHelperClient(discord.Client):
 
     @tasks.loop(seconds=60)  # task runs every 60 seconds
     async def my_background_task(self):
+
+        """
+        read ressource which contains current FC data
+        we have local info about the last message we posted
+        compare it to the message => if new info is there we update the existing message.
+        if fullclear is done start to generate summary numbers and graphs and post to channel.
+        """
 
         # testing for discord embed
         channel = self.get_channel(self.test_channel_token)  # channel ID goes here

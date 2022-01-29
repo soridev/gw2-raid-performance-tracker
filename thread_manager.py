@@ -1,10 +1,9 @@
-from cmath import log
-import sys
+import configparser
 import os
-import time
 import threading
+import datetime
 
-import kafka
+from dateutil import parser
 
 from config_helper import ConfigHelper
 from application_logging import init_logger
@@ -23,12 +22,19 @@ class ThreadManger:
         self,
         with_discord: bool = False,
         upload_logs: bool = False,
+        fullclear_date: str = None,
         full_log_load: bool = False,
     ) -> None:
 
         self.with_discord = with_discord
         self.upload_logs = upload_logs
+        self.fullclear_date = parser.parse(fullclear_date)
         self.full_log_load = full_log_load
+
+        if self.upload_logs:
+            ConfigHelper().set_config_item("elite-insights", "upload_logs", "yes")
+        else:
+            ConfigHelper().set_config_item("elite-insights", "upload_logs", "no")
 
     def run_application(self):
 
@@ -109,9 +115,17 @@ class ThreadManger:
 
 
 def main():
-    tm = ThreadManger()
+    tm = ThreadManger(
+        with_discord=True,
+        upload_logs=True,
+        fullclear_date="2022-01-24",
+        full_log_load=False,
+    )
+
     tm.run_application()
     # tm.load_all_logs()
+
+    # print(ConfigHelper().get_boolean_item("elite-insights", "upload_logs"))
 
 
 if __name__ == "__main__":

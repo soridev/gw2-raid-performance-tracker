@@ -1,9 +1,13 @@
+from cmath import log
 import os
+from django.http import JsonResponse
 import psycopg2
 import datetime
 import dateutil.parser
 import json
 import hashlib
+
+from psycopg2.extras import execute_values
 
 from config_helper import ConfigHelper
 from application_logging import init_logger
@@ -25,6 +29,7 @@ class ArcDataTransformator:
         self.db_connection.autocommit = True
         self.known_input_files = self.get_known_files()
         self.arc_raid_folders = []
+        self.upload_logs = self.conf.get_boolean_item("elite-insights", "upload_logs")
 
         # fetch already registered inputfiles
 
@@ -58,7 +63,6 @@ class ArcDataTransformator:
     def register_arclog_into_db(
         self, evtc_name: str, path_to_json_file: str, upload: bool = False
     ):
-
         evtc_name = os.path.basename(evtc_name)
 
         if not os.path.isfile(path_to_json_file):
@@ -127,51 +131,13 @@ class ArcDataTransformator:
 
             cursor.execute(insert_stmt, input_params)
 
-            # player and class info
-            players = log_data["players"]
+            # safe player infos
+            self.register_player_info(
+                log_id, kill_duration=duration_seconds, json_data=log_data
+            )
 
-            insert_stmt = """
-                INSERT INTO ark_core.player_info
-                    (log_id, account_name, character_name, profession, target_dps, total_cc, downstates, died)
-                    VALUES(%s, %s, %s, %s, %s, %s, %s, %s)
-            """
-
-            for p in players:
-                paccount = p["account"]
-                pname = p["name"]
-                pprofession = p["profession"]
-                # dps targets contains all targets => index 0 is always the boss, next we get list of phases => index 0 is total (all phases)
-                target_dps = p["dpsTargets"][0][0]["dps"]
-                total_cc = p["dpsTargets"][0][0]["breakbarDamage"]
-                downstates = 0
-                died = False
-
-                # check mechanics
-                for item in log_data["mechanics"]:
-                    if item["name"] == "Downed":
-                        for entry in item["mechanicsData"]:
-                            if entry["actor"] == pname:
-                                downstates += 1
-
-                    # check if player died
-                    if item["name"] == "Dead":
-                        for entry in item["mechanicsData"]:
-                            if entry["actor"] == pname:
-                                if entry["time"] <= duration_seconds * 1000:
-                                    died = True
-
-                params = (
-                    log_id,
-                    paccount,
-                    pname,
-                    pprofession,
-                    target_dps,
-                    total_cc,
-                    downstates,
-                    died,
-                )
-
-                cursor.execute(insert_stmt, params)
+            # safe mechanic infos
+            self.register_mechanics_info(log_id, json_data=log_data)
 
             self.known_input_files.append(evtc_name)
             self.db_connection.commit()
@@ -187,16 +153,104 @@ class ArcDataTransformator:
 
             raise err
 
+    def register_player_info(self, log_id, kill_duration, json_data):
+        # player and class info
+        log_data = json_data
+        cursor = self.db_connection.cursor()
+        players = log_data["players"]
+
+        insert_stmt = """
+            INSERT INTO ark_core.player_info
+                (log_id, account_name, character_name, profession, target_dps, total_cc, downstates, died)
+                VALUES(%s, %s, %s, %s, %s, %s, %s, %s)
+        """
+
+        for p in players:
+            paccount = p["account"]
+            pname = p["name"]
+            pprofession = p["profession"]
+            # dps targets contains all targets => index 0 is always the boss, next we get list of phases => index 0 is total (all phases)
+            target_dps = p["dpsTargets"][0][0]["dps"]
+            total_cc = p["dpsTargets"][0][0]["breakbarDamage"]
+            downstates = 0
+            died = False
+
+            # check mechanics
+            for item in log_data["mechanics"]:
+                if item["name"] == "Downed":
+                    for entry in item["mechanicsData"]:
+                        if entry["actor"] == pname:
+                            downstates += 1
+
+                # check if player died
+                if item["name"] == "Dead":
+                    for entry in item["mechanicsData"]:
+                        if entry["actor"] == pname:
+                            if entry["time"] <= kill_duration * 1000:
+                                died = True
+
+            params = (
+                log_id,
+                paccount,
+                pname,
+                pprofession,
+                target_dps,
+                total_cc,
+                downstates,
+                died,
+            )
+
+            cursor.execute(insert_stmt, params)
+
+    def register_mechanics_info(self, log_id, json_data):
+        cursor = self.db_connection.cursor()
+        log_data = json_data
+
+        # get all infos about mechanics from the log
+        ignore_list = ["Dead", "Downed", "Res", "Got up"]
+        mech_list = []
+        encounter_name = log_data["fightName"]
+
+        for item in log_data["mechanics"]:
+            if item["name"] in ignore_list:
+                pass
+            else:
+                current_mech_name = item["name"]
+                current_mech_description = item["description"]
+
+                for item_detail in item["mechanicsData"]:
+                    time_info = int(item_detail["time"])
+                    affected_actor = item_detail["actor"]
+
+                    new_entry = (
+                        log_id,
+                        encounter_name,
+                        current_mech_name,
+                        current_mech_description,
+                        time_info,
+                        affected_actor,
+                    )
+
+                    if new_entry not in mech_list:
+                        mech_list.append(new_entry)
+
+        # insert the data into the db
+        insert_sql = """
+                        INSERT INTO ARK_CORE.MECHANIC_INFO (
+                            LOG_ID,
+                            ENCOUNTER_NAME,
+                            MECHANIC_NAME,
+                            MECHANIC_DESCRIPTION,
+                            TIME_INFO,
+                            ACTOR)
+                        VALUES %s
+        """
+
+        execute_values(cursor, insert_sql, mech_list)
+
 
 def main():
-    adt = ArcDataTransformator()
-    f_id = adt.register_arclog_into_db(
-        evtc_name="C:\\Users\\Daniel\\Documents\\Guild Wars 2\\addons\\arcdps\\arcdps.cbtlogs\\Slothasor\\20211115-203047.zevtc",
-        path_to_json_file="c:\\Library\\Code\\gw2-raid-performance-tracker\\resources\\20211115-203047_sloth_fail.json",
-        upload=False,
-    )
-
-    logger.info(f_id)
+    print("This should be used as a library.")
 
 
 if __name__ == "__main__":

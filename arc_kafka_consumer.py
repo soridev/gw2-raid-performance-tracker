@@ -29,7 +29,7 @@ def consume_messages(bt_servers, kafka_topic):
         logger.info("Registering new file into database")
 
         log_id = ark_transformator.register_arclog_into_db(
-            evtc_name=message_content["input-file"],
+            evtc_path=message_content["input-file"],
             path_to_json_file=message_content["ei-json-file"],
         )
 

@@ -1,11 +1,10 @@
-from cmath import log
 import os
-from django.http import JsonResponse
 import psycopg2
 import datetime
 import dateutil.parser
 import json
 import hashlib
+import requests
 
 from psycopg2.extras import execute_values
 
@@ -29,6 +28,7 @@ class ArcDataTransformator:
         self.db_connection.autocommit = True
         self.known_input_files = self.get_known_files()
         self.arc_raid_folders = []
+        self.dr_user_token = self.conf.get_config_item("elite-insights", "dr_user_token")
         self.upload_logs = self.conf.get_boolean_item("elite-insights", "upload_logs")
 
         # fetch already registered inputfiles
@@ -61,9 +61,9 @@ class ArcDataTransformator:
         return folders
 
     def register_arclog_into_db(
-        self, evtc_name: str, path_to_json_file: str, upload: bool = False
+        self, evtc_path: str, path_to_json_file: str, upload: bool = False
     ):
-        evtc_name = os.path.basename(evtc_name)
+        evtc_name = os.path.basename(evtc_path)
 
         if not os.path.isfile(path_to_json_file):
             raise Exception("Given .json file does not exist.")
@@ -141,6 +141,14 @@ class ArcDataTransformator:
 
             self.known_input_files.append(evtc_name)
             self.db_connection.commit()
+
+            logger.info("Registered log into the database.")
+
+            if self.upload_logs:
+                try:
+                    self.upload_log(evtc_path, log_id=log_id)
+                except Exception as uperr:
+                    logger.error(f"Unable to upload log to dps.report: {str(uperr)}")
 
             # cleanup file after usage.
             logger.info(f"removing .json file: {str(path_to_json_file)}")
@@ -247,6 +255,37 @@ class ArcDataTransformator:
         """
 
         execute_values(cursor, insert_sql, mech_list)
+
+    def upload_log(self, log_path: str, log_id: str):
+        """Uploads an arcdps log do dps.report and adds the link in the database to the registered log"""
+
+        try:
+
+            base_url = f"""https://dps.report/uploadContent?json=1&generator=ei&userToken={self.dr_user_token}"""
+            form_data = {
+                'file': (os.path.basename(log_path), open(log_path, 'rb')),
+                'action': (None, 'store'),
+                'path': (None, '/path1')
+            }
+
+            r = requests.post(base_url, files=form_data).json()
+            permalink = r["permalink"]
+
+            update_sql = """
+                            UPDATE ARK_CORE.RAID_KILL_TIMES SET LINK_TO_UPLOAD = %s
+                            WHERE LOG_ID = %s
+            """
+
+            cursor = self.db_connection.cursor()
+            cursor.execute(query=update_sql, vars=(permalink, log_id))
+            self.db_connection.commit()
+
+            logger.info("Successfuly uploaded log to dps.report.")
+
+        except Exception as err:
+            logger.error("An error occured when uploading a log to dps.report:")
+            logger.error(f"{str(err)}")
+            raise Exception("Upload failed. Check log for details.")
 
 
 def main():

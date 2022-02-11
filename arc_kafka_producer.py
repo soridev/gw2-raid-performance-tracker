@@ -81,11 +81,7 @@ class Handler(FileSystemEventHandler):
                 "ei-json-file": json_result_file,
             }
 
-            produce_message(kafka_bootstrap_servers, arc_topic, kafka_message)
-
-            logger.info(
-                f"successfuly pushed message into kafka [topic => {str(arc_topic)}]."
-            )
+            produce_message(kafka_bootstrap_servers, arc_topic, kafka_message)            
 
         elif event.event_type == "modified":
             # Event is modified, you can process it now
@@ -98,6 +94,8 @@ def produce_message(bootstrap_servers, topic_name, message):
         value_serializer=lambda x: dumps(x).encode("utf-8"),
     )
     k_producer.send(topic_name, value=message)
+
+    logger.info(f"successfuly pushed message into kafka [topic => {str(topic_name)}].")
 
 
 def find_file_by_name(name, path):

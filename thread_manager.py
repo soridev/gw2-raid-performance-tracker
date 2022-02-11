@@ -40,6 +40,7 @@ class ThreadManger:
 
         if self.full_log_load:
             self.full_log_load()
+            return
 
         # start actions from here and do extra actiopns if specified
         kafka_arc_consumer_thread = threading.Thread(
@@ -110,16 +111,16 @@ class ThreadManger:
 
             logger.info("registering .json file into the database")
             adt.register_arclog_into_db(
-                evtc_name=file, path_to_json_file=json_result_file, upload=False
+                evtc_path=file, path_to_json_file=json_result_file, upload=False
             )
 
 
 def main():
     tm = ThreadManger(
         with_discord=True,
-        upload_logs=True,
+        upload_logs=False,
         fullclear_date="2022-01-24",
-        full_log_load=False,
+        full_log_load=False
     )
 
     tm.run_application()

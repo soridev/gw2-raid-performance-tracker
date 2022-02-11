@@ -1,8 +1,13 @@
-import discord
+from dis import dis
 import os
+import json
+from unicodedata import name
+import discord
 from discord.ext import commands
 from discord.ext import tasks
 from typing import List
+
+from arc_data_transformator import ArcDataTransformator
 
 from config_helper import ConfigHelper
 from application_logging import init_logger
@@ -11,7 +16,7 @@ logger = init_logger()
 
 
 class RaidHelperClient(discord.Client):
-    def __init__(self, fc_dates: List[str], *args, **kwargs):
+    def __init__(self, fc_dates: List[str], fc_guild_name: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.test_channel_token = int(ConfigHelper().get_config_item("discord-bot", "testing_channel"))
@@ -20,6 +25,9 @@ class RaidHelperClient(discord.Client):
         )
         self.fc_embed = None
         self.fc_dates = fc_dates
+        self.fc_guild_name = fc_guild_name
+        self.current_json = None
+        self.adt = ArcDataTransformator()
 
         # start the task to run in the background
         self.my_background_task.start()
@@ -27,41 +35,61 @@ class RaidHelperClient(discord.Client):
     async def on_ready(self):
         logger.info(f"Logged in as {self.user} (ID: {self.user.id})")
 
-    @tasks.loop(seconds=60)  # task runs every 60 seconds
+    @tasks.loop(seconds=10)  # task runs every x seconds
     async def my_background_task(self):
 
-        """
-        read ressource which contains current FC data
-        we have local info about the last message we posted
-        compare it to the message => if new info is there we update the existing message.
-        if fullclear is done start to generate summary numbers and graphs and post to channel.
-        """
-
-        # testing for discord embed
         channel = self.get_channel(self.test_channel_token)  # channel ID goes here
 
-        discord_embed = discord.Embed(title="[ZETA] Raid clear - 20/01/2022", color=0x00FDFD)
-        discord_embed.add_field(name="W1", value="Vale Guardian\nGorseval\nSabetha", inline=True)
-        discord_embed.add_field(name="W2", value="Vale Guardian\nGorseval\nSabetha", inline=True)
-        discord_embed.add_field(name="W3", value="Vale Guardian\nGorseval\nSabetha", inline=True)
-        discord_embed.add_field(name="W4", value="Vale Guardian\nGorseval\nSabetha", inline=True)
+        # update statusfile to current status
+        self.adt.manage_fullclear_status(self.fc_dates, self.fc_guild_name)
+        data = None
 
-        await channel.send(embed=discord_embed)
+        # load json status-file
+        with open(self.fc_tempfile, "r") as status_file:
+            data = json.load(status_file)
+
+        # check if json changed
+        if data != self.current_json:
+
+            # create discord embed
+            discord_embed = discord.Embed(
+                title=f"""{self.fc_guild_name} [{','.join(self.fc_dates)}]""",
+                color=0x00FDFD,
+            )
+
+            deimos_info = next((item for item in data if item["encounter_name"] == "Deimos"), None)
+            discord_embed.add_field(
+                name="W4",
+                value=f"""{deimos_info["encounter_name"]} [{deimos_info["duration"]} seconds] - {deimos_info["upload_link"]}""",
+                inline=True,
+            )
+
+            if self.fc_embed:
+                await self.fc_embed.edit(embed=discord_embed)
+            else:
+                self.fc_embed = await channel.send(embed=discord_embed)
+
+            self.current_json = data
+
+            # discord_embed.add_field(name="W1", value="Vale Guardian\nGorseval\nSabetha", inline=True)
+            # discord_embed.add_field(name="W2", value="Vale Guardian\nGorseval\nSabetha", inline=True)
+            # discord_embed.add_field(name="W3", value="Vale Guardian\nGorseval\nSabetha", inline=True)
+            # discord_embed.add_field(name="W4", value="Vale Guardian\nGorseval\nSabetha", inline=True)
 
     @my_background_task.before_loop
     async def before_my_task(self):
         await self.wait_until_ready()  # wait until the bot logs in
 
 
-def startup_fc_watcher(fc_dates: List[str]):
+def startup_fc_watcher(fc_dates: List[str], guild_name: str):
     discord_server_token = ConfigHelper().get_config_item("discord-bot", "discord_token")
 
-    client = RaidHelperClient(fc_dates=fc_dates)
+    client = RaidHelperClient(fc_dates=fc_dates, fc_guild_name=guild_name)
     client.run(discord_server_token)
 
 
 def main():
-    print("This script should be called as a library.")
+    startup_fc_watcher(fc_dates=["2022-01-24"], guild_name="ZETA")
 
 
 if __name__ == "__main__":

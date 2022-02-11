@@ -1,4 +1,5 @@
 import configparser
+from dis import dis
 import os
 import threading
 import datetime
@@ -13,6 +14,8 @@ from arc_kafka_producer import run_producer, find_file_by_name
 
 from arc_log_generator import generate_raw_data
 from arc_data_transformator import ArcDataTransformator
+
+from discord_interactions import startup_fc_watcher
 
 logger = init_logger()
 
@@ -44,11 +47,9 @@ class ThreadManger:
             self.load_all_logs()
             return
 
-        if self.fullclear_dates and self.guild:
+        if self.fullclear_dates and self.guild and self.with_discord:
             adt = ArcDataTransformator()
             adt.manage_fullclear_status(self.fullclear_dates, self.guild)
-
-            return
 
         # start actions from here and do extra actiopns if specified
         kafka_arc_consumer_thread = threading.Thread(target=run_consumer, name="kafka_arc_json_consumer")
@@ -59,7 +60,11 @@ class ThreadManger:
         kafka_arc_producer_thread.start()
 
         if self.with_discord:
-            pass
+            discord_interactions_thread = threading.Thread(
+                target=startup_fc_watcher, args=(self.fullclear_dates, self.guild), name="discord_interactions"
+            )
+
+            discord_interactions_thread.start()
 
     def load_all_logs(self):
         base_path = os.path.dirname(__file__)

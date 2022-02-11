@@ -37,9 +37,7 @@ class ArcDataTransformator:
         known_input_files = []
 
         cursor = self.db_connection.cursor()
-        cursor.execute(
-            "select input_file from ark_core.raid_kill_times rkt group by input_file"
-        )
+        cursor.execute("select input_file from ark_core.raid_kill_times rkt group by input_file")
 
         for line in cursor.fetchall():
             known_input_files.append(line[0])
@@ -60,18 +58,14 @@ class ArcDataTransformator:
 
         return folders
 
-    def register_arclog_into_db(
-        self, evtc_path: str, path_to_json_file: str, upload: bool = False
-    ):
+    def register_arclog_into_db(self, evtc_path: str, path_to_json_file: str, upload: bool = False):
         evtc_name = os.path.basename(evtc_path)
 
         if not os.path.isfile(path_to_json_file):
             raise Exception("Given .json file does not exist.")
 
         if evtc_name in self.known_input_files:
-            logger.info(
-                f"The given input file ({path_to_json_file}) is already registered into the database"
-            )
+            logger.info(f"The given input file ({path_to_json_file}) is already registered into the database")
 
             return None
 
@@ -90,9 +84,7 @@ class ArcDataTransformator:
         start_time = dateutil.parser.parse(log_data["timeStart"])
         end_time = dateutil.parser.parse(log_data["timeEnd"])
         qualifying_date = start_time.date()
-        duration = datetime.datetime.strptime(
-            log_data["duration"], "%Mm %Ss %fms"
-        )  # e.g. 05m 50s 137ms
+        duration = datetime.datetime.strptime(log_data["duration"], "%Mm %Ss %fms")  # e.g. 05m 50s 137ms
         duration_seconds = datetime.timedelta(
             hours=duration.hour,
             minutes=duration.minute,
@@ -132,9 +124,7 @@ class ArcDataTransformator:
             cursor.execute(insert_stmt, input_params)
 
             # safe player infos
-            self.register_player_info(
-                log_id, kill_duration=duration_seconds, json_data=log_data
-            )
+            self.register_player_info(log_id, kill_duration=duration_seconds, json_data=log_data)
 
             # safe mechanic infos
             self.register_mechanics_info(log_id, json_data=log_data)
@@ -263,9 +253,9 @@ class ArcDataTransformator:
 
             base_url = f"""https://dps.report/uploadContent?json=1&generator=ei&userToken={self.dr_user_token}"""
             form_data = {
-                'file': (os.path.basename(log_path), open(log_path, 'rb')),
-                'action': (None, 'store'),
-                'path': (None, '/path1')
+                "file": (os.path.basename(log_path), open(log_path, "rb")),
+                "action": (None, "store"),
+                "path": (None, "/path1"),
             }
 
             r = requests.post(base_url, files=form_data).json()
@@ -286,6 +276,57 @@ class ArcDataTransformator:
             logger.error("An error occured when uploading a log to dps.report:")
             logger.error(f"{str(err)}")
             raise Exception("Upload failed. Check log for details.")
+
+    def manage_fullclear_status(self, fullclear_dates, guild_name):
+        """Checks the fullclear status for the given dates for the given guild and updates a tempfile for it."""
+
+        try:
+            status_sql = """
+                select
+                    log_id,
+                    encounter_name,
+                    kill_duration_seconds,
+                    cm,
+                    link_to_upload
+                from ark_core.guild_logs
+                where
+                    qualifying_date in %s
+                    and guild_name = %s
+                    and success
+            """
+
+            cursor = self.db_connection.cursor()
+            json_result = []
+
+            cursor.execute(status_sql, (tuple(fullclear_dates), guild_name))
+
+            for row in cursor.fetchall():
+                json_result.append(
+                    {
+                        "log_id": row[0],
+                        "encounter_name": row[1],
+                        "duration": row[2],
+                        "is_cm": row[3],
+                        "upload_link": row[4],
+                    }
+                )
+
+            self.db_connection.commit()
+
+            temp_file_path = os.path.join(
+                os.path.dirname(__file__), self.conf.get_config_item("discord-bot", "temp_file_location")
+            )
+
+            # check if temp dir is there, else create
+            if not os.path.exists(os.path.dirname(temp_file_path)):
+                os.mkdir(os.path.dirname(temp_file_path))
+
+            with open(temp_file_path, "w") as fc_status_file:
+                json.dump(json_result, fc_status_file, indent=4, sort_keys=True)
+
+        except Exception as err:
+            logger.error("An error occured while parsing the fullclear status:")
+            logger.error(str(err))
 
 
 def main():

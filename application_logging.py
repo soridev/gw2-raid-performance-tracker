@@ -13,6 +13,7 @@ def init_logger(logger_name: str = None):
     else:
         # Create a custom logger
         logger = logging.getLogger(logger_name)
+        log_file_path = os.path.join(os.path.dirname(__file__), f"logs/{logger_name}.log")
 
         # check if loggin dir exists else create it
         if not os.path.exists(os.path.join(os.path.dirname(__file__), "logs")):
@@ -21,7 +22,7 @@ def init_logger(logger_name: str = None):
         # Create handlers
         logger.setLevel(logging.INFO)
         c_handler = logging.StreamHandler()
-        f_handler = logging.FileHandler(f"logs/{logger_name}.log")
+        f_handler = logging.FileHandler(log_file_path)
 
         # Create formatters and add it to handlers
         c_format = logging.Formatter("%(asctime)s [%(threadName)s] %(levelname)s - %(message)s")

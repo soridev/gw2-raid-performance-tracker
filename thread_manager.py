@@ -1,10 +1,7 @@
-import configparser
-from dis import dis
+import subprocess
+import shlex
 import os
 import threading
-import datetime
-
-from dateutil import parser
 
 from config_helper import ConfigHelper
 from application_logging import init_logger
@@ -60,11 +57,13 @@ class ThreadManger:
         kafka_arc_producer_thread.start()
 
         if self.with_discord:
-            discord_interactions_thread = threading.Thread(
-                target=startup_fc_watcher, args=(self.fullclear_dates, self.guild), name="discord_interactions"
-            )
+            fc_dates = ",".join(str(item) for item in self.fullclear_dates)
+            script_location = os.path.join(os.path.dirname(__file__), "discord_interactions.py").replace("\\", "/")
 
-            discord_interactions_thread.start()
+            subprocess.Popen(
+                shlex.split(f"""python "{script_location}" --guild {self.guild} --fc-dates {fc_dates}"""),
+                shell=False,
+            )
 
     def load_all_logs(self):
         base_path = os.path.dirname(__file__)

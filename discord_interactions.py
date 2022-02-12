@@ -66,10 +66,10 @@ class RaidHelperClient(discord.Client):
                 inline=True,
             )
 
-            # if self.fc_embed:
-            #     await self.fc_embed.edit(embed=discord_embed)
-            # else:
-            #     self.fc_embed = await channel.send(embed=discord_embed)
+            if self.fc_embed:
+                await self.fc_embed.edit(embed=discord_embed)
+            else:
+                self.fc_embed = await channel.send(embed=discord_embed)
 
             self.current_json = data
 

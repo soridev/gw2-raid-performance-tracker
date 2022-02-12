@@ -65,8 +65,17 @@ class RaidHelperClient(discord.Client):
     def create_fc_embed(self, data: pandas.DataFrame, boss_info):
 
         discord_embed = discord.Embed(
-            title=f"""{self.fc_guild_name} [{','.join(self.fc_dates)}]""",
+            title=f"""{self.fc_guild_name}   [{', '.join(self.fc_dates)}]""",
             color=0x00FDFD,
+        )
+
+        discord_embed.add_field(
+            name="General Stats",
+            value="""Start time, end-time and total clear time will be added when the FC is done.""",
+            inline=False,
+        )
+        discord_embed.set_footer(
+            text="""This message is auto-generated and updating as long as the backend is running."""
         )
 
         data.sort_values(by=["raid_wing", "boss_position"])
@@ -75,18 +84,17 @@ class RaidHelperClient(discord.Client):
         # group df by wings and loop over groups
         for group_name, df_group in df_grouped:
             current_wing_name = f"Wing {group_name}"
-            boss_info_lines = []
+            boss_info_line = ""
 
             # loop over rows in df group
             for row_index, row in df_group.iterrows():
                 kill_time_formatted = str(datetime.timedelta(seconds=round(row["kill_duration_seconds"], 0)))
                 dr_log = f" - [dps.report]({row['link_to_upload']})" if row["link_to_upload"] else ""
-                boss_info_lines.append(
-                    f""":white_check_mark: {row["encounter_name"]} [{kill_time_formatted}]{dr_log}"""
+                boss_info_line = (
+                    boss_info_line + f""":white_check_mark: {row["encounter_name"]} [{kill_time_formatted}]{dr_log}\n"""
                 )
 
-            content_string = "\n".join(entry for entry in boss_info_lines)
-            discord_embed.add_field(name=current_wing_name, value=content_string, inline=True)
+            discord_embed.add_field(name=current_wing_name, value=boss_info_line, inline=False)
 
         return discord_embed
 

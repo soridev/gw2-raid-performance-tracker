@@ -39,14 +39,11 @@ class ThreadManger:
             ConfigHelper().set_config_item("elite-insights", "upload_logs", "no")
 
     def run_application(self):
+        """Starts up the configured background tasks in seperate threads or processes."""
 
         if self.full_log_load:
             self.load_all_logs()
             return
-
-        if self.fullclear_dates and self.guild and self.with_discord:
-            adt = ArcDataTransformator()
-            adt.manage_fullclear_status(self.fullclear_dates, self.guild)
 
         # start actions from here and do extra actiopns if specified
         kafka_arc_consumer_thread = threading.Thread(target=run_consumer, name="kafka_arc_json_consumer")
@@ -56,7 +53,7 @@ class ThreadManger:
         kafka_arc_consumer_thread.start()
         kafka_arc_producer_thread.start()
 
-        if self.with_discord:
+        if self.with_discord and self.fullclear_dates and self.guild:
             fc_dates = ",".join(str(item) for item in self.fullclear_dates)
             script_location = os.path.join(os.path.dirname(__file__), "discord_interactions.py").replace("\\", "/")
 

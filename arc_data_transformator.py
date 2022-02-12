@@ -5,6 +5,7 @@ import dateutil.parser
 import json
 import hashlib
 import requests
+import pandas
 
 from psycopg2.extras import execute_values
 
@@ -277,52 +278,64 @@ class ArcDataTransformator:
             logger.error(f"{str(err)}")
             raise Exception("Upload failed. Check log for details.")
 
-    def manage_fullclear_status(self, fullclear_dates, guild_name):
+    def get_wing_and_boss_info(self):
+        """Returns the information about which bosses are in which wings and if they are rated as relevant boss."""
+
+        sql = """
+                select
+                    encounter_name,
+                    has_cm ,
+                    raid_wing ,
+                    boss_position ,
+                    relevant_boss
+                from
+                    ark_core.raid_encounters re
+                where
+                    relevant_boss
+                order by
+                    raid_wing,
+                    boss_position asc
+        """
+
+        cursor = self.db_connection.cursor()
+        json_result = []
+
+        cursor.execute(sql)
+        for row in cursor.fetchall():
+            json_result.append(
+                {"raid_wing": row[2], "boss_position": row[3], "encounter_name": row[0], "has_cm": row[1]}
+            )
+
+        self.db_connection.commit()
+
+        return json_result
+
+    def get_fullclear_status(self, fullclear_dates, guild_name):
         """Checks the fullclear status for the given dates for the given guild and updates a tempfile for it."""
 
         try:
             status_sql = """
                 select
-                    log_id,
-                    encounter_name,
-                    kill_duration_seconds,
-                    cm,
-                    link_to_upload
-                from ark_core.guild_logs
+                    gl.log_id,
+                    gl.encounter_name,
+                    gl.kill_duration_seconds,
+                    gl.cm,
+                    link_to_upload,
+                    re.raid_wing,
+                    re.boss_position
+                from ark_core.guild_logs gl
+                inner join ark_core.raid_encounters re on replace(gl.encounter_name, ' CM', '') = re.encounter_name 
                 where
                     qualifying_date in %s
                     and guild_name = %s
                     and success
             """
 
-            cursor = self.db_connection.cursor()
-            json_result = []
-
-            cursor.execute(status_sql, (tuple(fullclear_dates), guild_name))
-
-            for row in cursor.fetchall():
-                json_result.append(
-                    {
-                        "log_id": row[0],
-                        "encounter_name": row[1],
-                        "duration": row[2],
-                        "is_cm": row[3],
-                        "upload_link": row[4],
-                    }
-                )
-
+            # fetch data as panda dataframe
+            df = pandas.read_sql_query(status_sql, self.db_connection, params=(tuple(fullclear_dates), guild_name))
             self.db_connection.commit()
 
-            temp_file_path = os.path.join(
-                os.path.dirname(__file__), self.conf.get_config_item("discord-bot", "temp_file_location")
-            )
-
-            # check if temp dir is there, else create
-            if not os.path.exists(os.path.dirname(temp_file_path)):
-                os.mkdir(os.path.dirname(temp_file_path))
-
-            with open(temp_file_path, "w") as fc_status_file:
-                json.dump(json_result, fc_status_file, indent=4, sort_keys=True)
+            return df
 
         except Exception as err:
             logger.error("An error occured while parsing the fullclear status:")

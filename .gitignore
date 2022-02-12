@@ -131,7 +131,10 @@ dmypy.json
 docker-compose.yml
 config.ini
 .vscode
+
+# application specific folders
 GW2EI
 resources
 config/custom-settings.conf
 temp
+logs

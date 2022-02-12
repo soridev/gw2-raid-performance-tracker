@@ -1,18 +1,20 @@
-from dis import dis
 import os
 import json
-from unicodedata import name
+from zoneinfo import InvalidTZPathWarning
 import discord
-from discord.ext import commands
+import argparse
+
 from discord.ext import tasks
 from typing import List
+
+from numpy import require
 
 from arc_data_transformator import ArcDataTransformator
 
 from config_helper import ConfigHelper
 from application_logging import init_logger
 
-logger = init_logger()
+logger = init_logger(logger_name="discord_interactions")
 
 
 class RaidHelperClient(discord.Client):
@@ -64,10 +66,10 @@ class RaidHelperClient(discord.Client):
                 inline=True,
             )
 
-            if self.fc_embed:
-                await self.fc_embed.edit(embed=discord_embed)
-            else:
-                self.fc_embed = await channel.send(embed=discord_embed)
+            # if self.fc_embed:
+            #     await self.fc_embed.edit(embed=discord_embed)
+            # else:
+            #     self.fc_embed = await channel.send(embed=discord_embed)
 
             self.current_json = data
 
@@ -89,7 +91,24 @@ def startup_fc_watcher(fc_dates: List[str], guild_name: str):
 
 
 def main():
-    startup_fc_watcher(fc_dates=["2022-01-24"], guild_name="ZETA")
+    """Startup the discord bot to update and manage messages for a fullclear."""
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "--fc-dates",
+        dest="fc_dates",
+        help="Add one or more dates sperated by comma under quotes, format: YYYY-MM-DD.",
+        required=True,
+    )
+    parser.add_argument("--guild", dest="guild_name", help="The guild name to look for.", required=True)
+
+    args = parser.parse_args()
+
+    input_dates = args.fc_dates.strip().split(",")
+    guild_name = args.guild_name
+
+    startup_fc_watcher(fc_dates=input_dates, guild_name=guild_name)
 
 
 if __name__ == "__main__":

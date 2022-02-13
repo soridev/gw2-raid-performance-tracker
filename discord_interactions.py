@@ -90,7 +90,6 @@ Total duration: {date_time_info["clear_duration"]}
             text="""This message is auto-generated and updating as long as the backend is running."""
         )
 
-        data.sort_values(by=["raid_wing", "boss_position"])
         df_grouped = data.groupby("raid_wing")
 
         # group df by wings and loop over groups

@@ -112,8 +112,8 @@ def main():
     tm = ThreadManger(
         with_discord=True,
         upload_logs=True,
-        fullclear_dates=["2022-02-09", "2022-02-10"],
-        guild="Static in Pain",
+        fullclear_dates=["2022-02-07"],
+        guild="ZETA",
         full_log_load=False,
     )
 

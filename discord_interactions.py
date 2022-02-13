@@ -69,9 +69,21 @@ class RaidHelperClient(discord.Client):
             color=0x00FDFD,
         )
 
+        gen_stats_message = "Start time, end-time and total clear time will be added when the FC is done."
+
+        # check if fullclear is finished and all relevant bosses are cleared.
+        is_done = self.adt.is_fullclear_done(self.fc_dates, self.fc_guild_name)
+
+        if is_done:
+            date_time_info = self.adt.get_fullclear_time_stats(self.fc_dates, self.fc_guild_name)
+            gen_stats_message = f"""Start: {str(date_time_info["clear_start_time"])}
+End: {str(date_time_info["clear_end_time"])}
+Total duration: {date_time_info["clear_duration"]}
+            """
+
         discord_embed.add_field(
             name="General Stats",
-            value="""Start time, end-time and total clear time will be added when the FC is done.""",
+            value=gen_stats_message,
             inline=False,
         )
         discord_embed.set_footer(
@@ -115,9 +127,9 @@ def main():
         "--fc-dates",
         dest="fc_dates",
         help="Add one or more dates sperated by comma under quotes, format: YYYY-MM-DD.",
-        required=True,
+        required=False,
     )
-    parser.add_argument("--guild", dest="guild_name", help="The guild name to look for.", required=True)
+    parser.add_argument("--guild", dest="guild_name", help="The guild name to look for.", required=False)
 
     args = parser.parse_args()
 

@@ -58,7 +58,7 @@ class ThreadManger:
             script_location = os.path.join(os.path.dirname(__file__), "discord_interactions.py").replace("\\", "/")
 
             subprocess.Popen(
-                shlex.split(f"""python "{script_location}" --guild {self.guild} --fc-dates {fc_dates}"""),
+                shlex.split(f"""python "{script_location}" --guild "{self.guild}" --fc-dates "{fc_dates}" """),
                 shell=False,
             )
 
@@ -111,9 +111,9 @@ class ThreadManger:
 def main():
     tm = ThreadManger(
         with_discord=True,
-        upload_logs=False,
-        fullclear_dates=["2022-02-07"],
-        guild="ZETA",
+        upload_logs=True,
+        fullclear_dates=["2022-02-09", "2022-02-10"],
+        guild="Static in Pain",
         full_log_load=False,
     )
 

@@ -320,15 +320,16 @@ class ArcDataTransformator:
                     gl.encounter_name,
                     gl.kill_duration_seconds,
                     gl.cm,
-                    link_to_upload,
+                    gl.link_to_upload,
                     re.raid_wing,
                     re.boss_position
                 from ark_core.guild_logs gl
                 inner join ark_core.raid_encounters re on replace(gl.encounter_name, ' CM', '') = re.encounter_name 
                 where
-                    qualifying_date in %s
-                    and guild_name = %s
-                    and success
+                    gl.qualifying_date in %s
+                    and gl.guild_name = %s
+                    and gl.success
+                    and re.relevant_boss
             """
 
             # fetch data as panda dataframe
@@ -339,6 +340,79 @@ class ArcDataTransformator:
 
         except Exception as err:
             logger.error("An error occured while parsing the fullclear status:")
+            logger.error(str(err))
+
+    def get_fullclear_time_stats(self, fullclear_dates, guild_name):
+        """Returns a dict with info about how long the fullclear took, when it started and when it was done."""
+
+        sql = """
+                select
+                    gl.qualifying_date,
+                    gl.start_time,
+                    gl.end_time
+                from ark_core.guild_logs gl
+                inner join ark_core.raid_encounters re on replace(gl.encounter_name, ' CM', '') = re.encounter_name
+                where
+                    qualifying_date in %s
+                    and guild_name = %s
+        """
+
+        data = pandas.read_sql_query(sql, self.db_connection, params=(tuple(fullclear_dates), guild_name))
+        self.db_connection.commit()
+
+        total_start_time = data["start_time"].min()
+        total_end_time = data["end_time"].max()
+        total_time = datetime.timedelta(hours=0, minutes=0, seconds=0)
+
+        grouped_min = data.groupby(["qualifying_date"])["start_time"].min().to_list()
+        grouped_max = data.groupby(["qualifying_date"])["end_time"].max().to_list()
+
+        for start, end in zip(grouped_min, grouped_max):
+            total_time = total_time + (end - start)
+
+        total_time_formatted = f"""{total_time.seconds//3600}h {(total_time.seconds//60)%60}m"""
+
+        result = {
+            "clear_start_time": total_start_time,
+            "clear_end_time": total_end_time,
+            "clear_duration": total_time_formatted,
+        }
+
+        return result
+
+    def is_fullclear_done(self, fullclear_dates, guild_name) -> bool:
+        """Checks if all relevant bosses are cleared for the given guild and dates."""
+
+        try:
+            check_sql = """
+                select
+                    case
+                        when
+                            count(gl.log_id) >= (select count(*) from ark_core.raid_encounters re where relevant_boss)
+                        then
+                            true
+                        else
+                            false
+                        end as "FC_DONE"
+                from ark_core.guild_logs gl
+                where
+                    guild_name = 'ZETA'
+                    and qualifying_date = '2022-02-07'
+                    and success
+            """
+
+            cursor = self.db_connection.cursor()
+            cursor.execute(check_sql)
+
+            self.db_connection.commit()
+
+            if cursor.fetchone()[0]:
+                return True
+            else:
+                return False
+
+        except Exception as err:
+            logger.error("An error occured while checking if fullclear is done:")
             logger.error(str(err))
 
 

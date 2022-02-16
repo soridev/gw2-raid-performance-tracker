@@ -175,18 +175,19 @@ class ArcDataTransformator:
             died = False
 
             # check mechanics
-            for item in log_data["mechanics"]:
-                if item["name"] == "Downed":
-                    for entry in item["mechanicsData"]:
-                        if entry["actor"] == pname:
-                            downstates += 1
+            if "mechanics" in log_data:
+                for item in log_data["mechanics"]:
+                    if item["name"] == "Downed":
+                        for entry in item["mechanicsData"]:
+                            if entry["actor"] == pname:
+                                downstates += 1
 
-                # check if player died
-                if item["name"] == "Dead":
-                    for entry in item["mechanicsData"]:
-                        if entry["actor"] == pname:
-                            if entry["time"] <= kill_duration * 1000:
-                                died = True
+                    # check if player died
+                    if item["name"] == "Dead":
+                        for entry in item["mechanicsData"]:
+                            if entry["actor"] == pname:
+                                if entry["time"] <= kill_duration * 1000:
+                                    died = True
 
             params = (
                 log_id,
@@ -209,6 +210,9 @@ class ArcDataTransformator:
         ignore_list = ["Dead", "Downed", "Res", "Got up"]
         mech_list = []
         encounter_name = log_data["fightName"]
+
+        if "mechanics" not in log_data:
+            return
 
         for item in log_data["mechanics"]:
             if item["name"] in ignore_list:
@@ -330,6 +334,7 @@ class ArcDataTransformator:
                     and gl.guild_name = %s
                     and gl.success
                     and re.relevant_boss
+                order by re.raid_wing, re.boss_position asc
             """
 
             # fetch data as panda dataframe

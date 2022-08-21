@@ -420,6 +420,31 @@ class ArcDataTransformator:
             logger.error("An error occured while checking if fullclear is done:")
             logger.error(str(err))
 
+    def get_fullclear_dps_rating(self, fullclear_dates, guild_name) -> bool:
+        """Generate a rating based on factor 100 of the actual dps numbers of the players on boss."""
+
+        sql = """
+        	select
+                gl.encounter_name ,
+                pi2.account_name ,
+                pi2.target_dps,
+                rank() over (partition by gl.encounter_name order by pi2.target_dps desc) as "ranking"
+            from
+                ark_core.player_info pi2
+                left outer join ark_core.guild_logs gl on pi2.log_id = gl.log_id  
+                left outer join ark_core.raid_encounters re on gl.encounter_name = re.encounter_name 
+            where		
+                gl.guild_name = %s
+                and pi2.account_name like '%.____'
+                and gl.qualifying_date in %s
+                and gl.success
+                and pi2.target_dps > 0
+                and re.relevant_boss
+        """
+
+        data = pandas.read_sql_query(sql, self.db_connection, params=(tuple(fullclear_dates), guild_name))
+        grouped_dfs = data.groupby("encounter_name")
+
 
 def main():
     print("This should be used as a library.")

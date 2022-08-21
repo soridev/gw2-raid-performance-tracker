@@ -1,6 +1,5 @@
 import os
 import time
-from numpy import full
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from kafka import KafkaProducer

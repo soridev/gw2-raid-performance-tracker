@@ -138,3 +138,6 @@ resources
 config/custom-settings.conf
 temp
 logs
+
+# docker specific files
+.docker

@@ -141,3 +141,6 @@ logs
 
 # docker specific files
 .docker
+
+# sqllite
+results.sqlite

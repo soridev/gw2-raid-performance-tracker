@@ -18,6 +18,7 @@ logger = init_logger()
 class ArcDataTransformator:
     def __init__(self) -> None:
         self.conf = ConfigHelper()
+        # postgres connection and settings
         self.db_connection = psycopg2.connect(
             host=self.conf.get_config_item("postgres-db", "server"),
             port=self.conf.get_config_item("postgres-db", "port"),
@@ -25,20 +26,19 @@ class ArcDataTransformator:
             user=self.conf.get_config_item("postgres-db", "user"),
             password=self.conf.get_config_item("postgres-db", "password"),
         )
-
         self.db_connection.autocommit = True
+
+        # fetch already registered inputfiles
         self.known_input_files = self.get_known_files()
         self.arc_raid_folders = []
         self.dr_user_token = self.conf.get_config_item("elite-insights", "dr_user_token")
         self.upload_logs = self.conf.get_boolean_item("elite-insights", "upload_logs")
 
-        # fetch already registered inputfiles
-
     def get_known_files(self):
         known_input_files = []
 
         cursor = self.db_connection.cursor()
-        cursor.execute("select input_file from ark_core.raid_kill_times rkt group by input_file")
+        cursor.execute("select input_file from public.raid_kill_times rkt group by input_file")
 
         for line in cursor.fetchall():
             known_input_files.append(line[0])
@@ -51,13 +51,21 @@ class ArcDataTransformator:
         folders = []
         cursor = self.db_connection.cursor()
 
-        sql = "select ark_folder_name from ark_core.raid_encounters"
+        sql = "select ark_folder_name from public.raid_encounters"
         cursor.execute(sql)
 
         for line in cursor.fetchall():
             folders.append(line[0])
 
         return folders
+
+    def generate_log_id(self, boss_name, start_time):
+        """Generates a hash from the bossname and start-time of the given data."""
+
+        identifying_string = f"{str(boss_name)}{str(start_time)}"
+        log_id = hashlib.sha1(bytes(identifying_string, encoding="utf-8")).hexdigest()
+
+        return log_id
 
     def register_arclog_into_db(self, evtc_path: str, path_to_json_file: str, upload: bool = False):
         evtc_name = os.path.basename(evtc_path)
@@ -96,33 +104,50 @@ class ArcDataTransformator:
         is_cm = log_data["isCM"]
 
         # create identifier for log
-        identifying_string = f"{str(boss_name)}{str(start_time)}"
-        log_id = hashlib.sha1(bytes(identifying_string, encoding="utf-8")).hexdigest()
+        log_id = self.generate_log_id(boss_name=boss_name, start_time=start_time)
 
         # insert into datbase
         cursor = self.db_connection.cursor()
         self.db_connection.autocommit = False
 
         try:
-            # basic log info
-            insert_stmt = """
-                INSERT INTO ark_core.raid_kill_times(
-                    log_id, encounter_name, qualifying_date, start_time, end_time, kill_duration_seconds, success, cm, input_file)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+            try:
+                # basic log info
+                insert_stmt = """
+                    INSERT INTO public.raid_kill_times(
+                        log_id,
+                        encounter_name,
+                        qualifying_date,
+                        start_time,
+                        end_time,
+                        kill_duration_seconds,
+                        success,
+                        cm,
+                        input_file)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"""
 
-            input_params = (
-                log_id,
-                boss_name,
-                qualifying_date,
-                start_time,
-                end_time,
-                duration_seconds,
-                success,
-                is_cm,
-                file_source,
-            )
+                input_params = (
+                    log_id,
+                    boss_name,
+                    qualifying_date,
+                    start_time,
+                    end_time,
+                    duration_seconds,
+                    success,
+                    is_cm,
+                    file_source,
+                )
 
-            cursor.execute(insert_stmt, input_params)
+                cursor.execute(insert_stmt, input_params)
+
+            except psycopg2.IntegrityError as pgerr:
+                self.db_connection.rollback()
+
+                logger.warning(str(pgerr))
+                logger.info(f"Log {file_source} already stored in db. Removing .json file.")
+                os.remove(path_to_json_file)
+
+                return None
 
             # safe player infos
             self.register_player_info(log_id, kill_duration=duration_seconds, json_data=log_data)
@@ -159,7 +184,7 @@ class ArcDataTransformator:
         players = log_data["players"]
 
         insert_stmt = """
-            INSERT INTO ark_core.player_info
+            INSERT INTO public.player_info
                 (log_id, account_name, character_name, profession, target_dps, total_cc, downstates, died)
                 VALUES(%s, %s, %s, %s, %s, %s, %s, %s)
         """
@@ -239,7 +264,7 @@ class ArcDataTransformator:
 
         # insert the data into the db
         insert_sql = """
-                        INSERT INTO ARK_CORE.MECHANIC_INFO (
+                        INSERT INTO public.MECHANIC_INFO (
                             LOG_ID,
                             ENCOUNTER_NAME,
                             MECHANIC_NAME,
@@ -267,7 +292,7 @@ class ArcDataTransformator:
             permalink = r["permalink"]
 
             update_sql = """
-                            UPDATE ARK_CORE.RAID_KILL_TIMES SET LINK_TO_UPLOAD = %s
+                            UPDATE public.RAID_KILL_TIMES SET LINK_TO_UPLOAD = %s
                             WHERE LOG_ID = %s
             """
 
@@ -293,7 +318,7 @@ class ArcDataTransformator:
                     boss_position ,
                     relevant_boss
                 from
-                    ark_core.raid_encounters re
+                    public.raid_encounters re
                 where
                     relevant_boss
                 order by
@@ -327,8 +352,8 @@ class ArcDataTransformator:
                     gl.link_to_upload,
                     re.raid_wing,
                     re.boss_position
-                from ark_core.guild_logs gl
-                inner join ark_core.raid_encounters re on replace(gl.encounter_name, ' CM', '') = re.encounter_name 
+                from public.guild_logs gl
+                inner join public.raid_encounters re on replace(gl.encounter_name, ' CM', '') = re.encounter_name 
                 where
                     gl.qualifying_date in %s
                     and gl.guild_name = %s
@@ -355,8 +380,8 @@ class ArcDataTransformator:
                     gl.qualifying_date,
                     gl.start_time,
                     gl.end_time
-                from ark_core.guild_logs gl
-                inner join ark_core.raid_encounters re on replace(gl.encounter_name, ' CM', '') = re.encounter_name
+                from public.guild_logs gl
+                inner join public.raid_encounters re on replace(gl.encounter_name, ' CM', '') = re.encounter_name
                 where
                     qualifying_date in %s
                     and guild_name = %s
@@ -393,13 +418,13 @@ class ArcDataTransformator:
                 select
                     case
                         when
-                            count(gl.log_id) >= (select count(*) from ark_core.raid_encounters re where relevant_boss)
+                            count(gl.log_id) >= (select count(*) from public.raid_encounters re where relevant_boss)
                         then
                             true
                         else
                             false
                         end as "FC_DONE"
-                from ark_core.guild_logs gl
+                from public.guild_logs gl
                 where
                     guild_name = 'ZETA'
                     and qualifying_date = '2022-02-07'
@@ -424,16 +449,16 @@ class ArcDataTransformator:
         """Generate a rating based on factor 100 of the actual dps numbers of the players on boss."""
 
         sql = """
-        	select
+            select
                 gl.encounter_name ,
                 pi2.account_name ,
                 pi2.target_dps,
                 rank() over (partition by gl.encounter_name order by pi2.target_dps desc) as "ranking"
             from
-                ark_core.player_info pi2
-                left outer join ark_core.guild_logs gl on pi2.log_id = gl.log_id  
-                left outer join ark_core.raid_encounters re on gl.encounter_name = re.encounter_name 
-            where		
+                public.player_info pi2
+                left outer join public.guild_logs gl on pi2.log_id = gl.log_id  
+                left outer join public.raid_encounters re on gl.encounter_name = re.encounter_name 
+            where
                 gl.guild_name = %s
                 and pi2.account_name like '%.____'
                 and gl.qualifying_date in %s

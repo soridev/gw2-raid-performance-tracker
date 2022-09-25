@@ -1,23 +1,23 @@
--- ark_core.fullclear_settings definition
+-- public.fullclear_settings definition
 
 -- Drop table
 
--- DROP TABLE ark_core.fullclear_settings;
+-- DROP TABLE public.fullclear_settings;
 
-CREATE TABLE ark_core.fullclear_settings (
+CREATE TABLE public.fullclear_settings (
 	guild_name varchar NOT NULL,
 	raid_weekday int4 NOT NULL,
 	number_of_players_treshhold int4 NOT NULL,
 	CONSTRAINT pk_fullclear_settings PRIMARY KEY (guild_name, raid_weekday)
 );
 
--- ark_core.guild_members definition
+-- public.guild_members definition
 
 -- Drop table
 
--- DROP TABLE ark_core.guild_members;
+-- DROP TABLE public.guild_members;
 
-CREATE TABLE ark_core.guild_members (
+CREATE TABLE public.guild_members (
 	guild_name varchar(300) NOT NULL,
 	account_name varchar(300) NOT NULL,
 	entry_date date NOT NULL,
@@ -26,13 +26,13 @@ CREATE TABLE ark_core.guild_members (
 );
 
 
--- ark_core.raid_encounters definition
+-- public.raid_encounters definition
 
 -- Drop table
 
--- DROP TABLE ark_core.raid_encounters;
+-- DROP TABLE public.raid_encounters;
 
-CREATE TABLE ark_core.raid_encounters (
+CREATE TABLE public.raid_encounters (
 	encounter_name varchar(200) NOT NULL,
 	ark_folder_name varchar(200) NOT NULL,
 	has_cm bool NOT NULL,
@@ -42,13 +42,13 @@ CREATE TABLE ark_core.raid_encounters (
 	CONSTRAINT pk_raid_encounters PRIMARY KEY (encounter_name)
 );
 
--- ark_core.raid_kill_times definition
+-- public.raid_kill_times definition
 
 -- Drop table
 
--- DROP TABLE ark_core.raid_kill_times;
+-- DROP TABLE public.raid_kill_times;
 
-CREATE TABLE ark_core.raid_kill_times (
+CREATE TABLE public.raid_kill_times (
 	log_id varchar(100) NOT NULL,
 	encounter_name varchar(500) NULL,
 	qualifying_date date NOT NULL,
@@ -62,13 +62,13 @@ CREATE TABLE ark_core.raid_kill_times (
 );
 
 
--- ark_core.player_info definition
+-- public.player_info definition
 
 -- Drop table
 
--- DROP TABLE ark_core.player_info;
+-- DROP TABLE public.player_info;
 
-CREATE TABLE ark_core.player_info (
+CREATE TABLE public.player_info (
 	log_id varchar(100) NOT NULL,
 	account_name varchar(300) NOT NULL,
 	character_name varchar(300) NOT NULL,
@@ -81,24 +81,24 @@ CREATE TABLE ark_core.player_info (
 );
 
 
--- ark_core.player_info foreign keys
+-- public.player_info foreign keys
 
-ALTER TABLE ark_core.player_info ADD CONSTRAINT fk_players_kill_times FOREIGN KEY (log_id) REFERENCES ark_core.raid_kill_times(log_id);
+ALTER TABLE public.player_info ADD CONSTRAINT fk_players_kill_times FOREIGN KEY (log_id) REFERENCES public.raid_kill_times(log_id);
 
 
--- ark_core.log_mapping definition
+-- public.log_mapping definition
 
 -- Drop table
 
--- DROP TABLE ark_core.log_mapping;
+-- DROP TABLE public.log_mapping;
 
-CREATE TABLE ark_core.log_mapping (
+CREATE TABLE public.log_mapping (
 	log_id varchar(100) NOT NULL,
 	clear_id varchar(100) NOT NULL,
 	CONSTRAINT pk_log_mapping PRIMARY KEY (log_id, clear_id)
 );
 
 
--- ark_core.log_mapping foreign keys
+-- public.log_mapping foreign keys
 
-ALTER TABLE ark_core.log_mapping ADD CONSTRAINT fk_log_mapping_raid_kill_times FOREIGN KEY (log_id) REFERENCES ark_core.raid_kill_times(log_id);
+ALTER TABLE public.log_mapping ADD CONSTRAINT fk_log_mapping_raid_kill_times FOREIGN KEY (log_id) REFERENCES public.raid_kill_times(log_id);

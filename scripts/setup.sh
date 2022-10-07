@@ -19,7 +19,7 @@ if [ -z "$given_user" ]; then
 fi
 
 # those dirs are required for the app to work
-required_dirs=("/var/load/cbtlogs/uncategorized" "/var/load/cbtlogs/out" "/var/load/cbtlogs/archive" "/opt/GW2EI")
+required_dirs=("/var/load/cbtlogs/uncategorized" "/var/load/cbtlogs/out" "/var/load/cbtlogs/archive" "/opt/GW2EI" "/var/postgres/gw2-raid-performance-tracker/data" "/var/backups/postgres")
 
 # create dirs if not exists. Sets owner and permissions
 for i in "${required_dirs[@]}"

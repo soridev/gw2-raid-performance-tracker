@@ -1,0 +1,23 @@
+---
+version: '2'
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    volumes:
+      - ./.docker/rabbitmq/etc/:/etc/rabbitmq/
+      - ./.docker/rabbitmq/data/:/var/lib/rabbitmq/mnesia
+      - ./.docker/rabbitmq/logs/:/var/log/rabbitmq/
+    ports:
+      - 4369:4369
+      - 5672:5672
+  postgres:
+    image: postgres:10.5
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - 5432:5432
+    volumes:
+      - /var/postgres/gw2-raid-performance-tracker/data/:/var/lib/postgresql/data
+      - /var/backups/postgres/:/backups

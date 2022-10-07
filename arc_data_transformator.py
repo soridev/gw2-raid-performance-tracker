@@ -6,6 +6,7 @@ import json
 import hashlib
 import requests
 import pandas
+import shutil
 
 from psycopg2.extras import execute_values
 
@@ -69,6 +70,7 @@ class ArcDataTransformator:
 
     def register_arclog_into_db(self, evtc_path: str, path_to_json_file: str, upload: bool = False):
         evtc_name = os.path.basename(evtc_path)
+        archive = archive = ConfigHelper().get_config_item("elite-insights", "archive")
 
         if not os.path.isfile(path_to_json_file):
             raise Exception("Given .json file does not exist.")
@@ -166,7 +168,9 @@ class ArcDataTransformator:
                 except Exception as uperr:
                     logger.error(f"Unable to upload log to dps.report: {str(uperr)}")
 
-            # cleanup file after usage.
+            # cleanup files after usage.
+            logger.info(f"Moving input file {str(evtc_path)} to archive.")
+            shutil.move(evtc_path, os.path.join(archive, evtc_name))
             logger.info(f"removing .json file: {str(path_to_json_file)}")
             os.remove(path_to_json_file)
 
@@ -353,7 +357,7 @@ class ArcDataTransformator:
                     re.raid_wing,
                     re.boss_position
                 from public.guild_logs gl
-                inner join public.raid_encounters re on replace(gl.encounter_name, ' CM', '') = re.encounter_name 
+                inner join public.raid_encounters re on replace(gl.encounter_name, ' CM', '') = re.encounter_name
                 where
                     gl.qualifying_date in %s
                     and gl.guild_name = %s

@@ -31,7 +31,6 @@ def generate_evtc_raw_data(input_file_name: str, file_path: str, settings_file: 
         return result
 
     ei_binary = ConfigHelper().get_config_item("elite-insights", "binary")
-    archive = ConfigHelper().get_config_item("elite-insights", "archive")
     outfolder = ConfigHelper().get_config_item("elite-insights", "outfolder")
     cmd = f"mono {ei_binary} -p -c {settings_file} {file_path}"
     basename = os.path.basename(file_path)
@@ -71,10 +70,7 @@ def generate_evtc_raw_data(input_file_name: str, file_path: str, settings_file: 
     else:
         raise Exception(f"Seems like we have duplicate .json files in the output folder ({outfolder}).")
 
-    # move input file to archive after json is generated.
-    shutil.move(file_path, os.path.join(archive, basename))
-
-    return {"input_file": input_file_name, "ei_json_file": json_result_file}
+    return {"input_file": file_path, "ei_json_file": json_result_file}
 
 
 @gw2_raid_performance_tracker.task

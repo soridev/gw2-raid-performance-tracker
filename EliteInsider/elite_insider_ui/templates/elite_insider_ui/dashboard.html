@@ -1,0 +1,25 @@
+{% extends "elite_insider_ui/skeleton.html" %}
+{% load static %}
+{% block title %}Dashboard{% endblock %}
+
+{% block style %}
+<style>
+    #chart-container{
+        padding: 13px;
+    }
+</style>
+{% endblock %}
+
+{% block content  %}
+<div class="container-fluid">
+    <div id="chart-container">
+        <div id="gkt-overview-chart"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'js/dashboard.js' %}">
+
+</script>
+{% endblock %}

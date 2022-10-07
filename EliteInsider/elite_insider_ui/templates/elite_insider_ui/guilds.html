@@ -1,0 +1,83 @@
+{% extends "elite_insider_ui/skeleton.html" %}
+{% load static %}
+{% block title %}Dashboard{% endblock %}
+
+{% block style %}
+<style>
+    .main-content {
+        color: white;
+        padding: 14px;
+        margin-top: 10px;
+    }
+    .guild-config-item {
+        margin-bottom: 5px;
+    }    
+    .guild-config-item-checkbox{
+        padding: 7px;
+    }
+    textarea {
+        /* margin:0px 0px; this is redundant anyways since its specified below*/
+        padding-top:10px;
+        padding-bottom:25px; /* increased! */
+        /* height:16px; */
+        /* line-height:16px; */
+        width:100%; /* changed from 96 to 100% */
+        display:block;
+        /* margin:0px auto; not needed since i have width 100% now */
+    }
+    #btn-save-guild{
+        margin-left: auto;
+    }
+    .guild-dropdown {
+        background-color: #e9ecef;
+        color: black;
+    }
+    #guild-config-body{
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content  %}
+<div class="container-fluid main-content">    
+    <div class="col-sm-5 guild-config-container">
+        <div class="dropdown guild-config-item">
+            <button class="btn btn-secondary dropdown-toggle guild-dropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Select a guild
+            </button>
+            <ul class="dropdown-menu dropdown-menu-dark" id="guild-dropdown-body">
+                
+            </ul>
+            <button id="btn-create-guild" class="btn btn-secondary guild-dropdown" type="button">Create Guild</button>
+        </div>
+        <div id="guild-config-body">
+            <div class="input-group guild-config-item">
+                <span class="input-group-text" id="basic-addon1">Guildname</span>
+                <input id="i-guild-name" type="text" class="form-control" placeholder="Guildname" aria-label="Guildname" aria-describedby="basic-addon1">            
+            </div>
+            <div class="input-group guild-config-item guild-config-item-checkbox">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="flexCheckChecked" checked>
+                    <label class="form-check-label" for="flexCheckChecked">
+                        Discord Notifications
+                    </label>
+                </div>
+            </div>
+            <div class="input-group guild-config-item">
+                <span class="input-group-text">Guild Members (account-names split with newline.)</span>
+                <textarea id="guild-account-names" class="form-control" spellcheck="false" aria-label="With textarea" placeholder="Avatar.1234
+Betavar.1234"></textarea>
+            </div>            
+            <div class="input-group guild-config-item">
+                <button id="btn-save-guild" type="button" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'js/guilds.js' %}">
+
+</script>
+{% endblock %}    

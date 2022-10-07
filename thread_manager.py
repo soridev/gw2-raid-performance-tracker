@@ -17,17 +17,11 @@ logger = init_logger()
 class ThreadManger:
     def __init__(
         self,
-        with_discord: bool = False,
         upload_logs: bool = False,
-        fullclear_dates: str = None,
-        guild: str = None,
         full_log_load: bool = False,
     ) -> None:
 
-        self.with_discord = with_discord
         self.upload_logs = upload_logs
-        self.fullclear_dates = fullclear_dates
-        self.guild = guild
         self.full_log_load = full_log_load
 
         if self.upload_logs:
@@ -48,14 +42,7 @@ class ThreadManger:
         # start arc filewatcher
         arc_producer_thread.start()
 
-        if self.with_discord and self.fullclear_dates and self.guild:
-            fc_dates = ",".join(str(item) for item in self.fullclear_dates)
-            script_location = os.path.join(os.path.dirname(__file__), "discord_interactions.py").replace("\\", "/")
-
-            subprocess.Popen(
-                shlex.split(f"""python3 "{script_location}" --guild "{self.guild}" --fc-dates "{fc_dates}" """),
-                shell=False,
-            )
+        # subprocess.Popen(shlex.split(f"""python3 "{script_location}" --guild "{self.guild}" --fc-dates "{fc_dates}" """),shell=False)
 
     def load_all_logs(self):
         arc_base_dir = ConfigHelper().get_config_item("elite-insights", "logfolder")
@@ -102,22 +89,16 @@ class ThreadManger:
 
 def sync_arc_folder():
 
-    # find /var/load/cbtlogs/wincbtlogs/ -name \*.zevtc | rsync -av --files-from - --no-relative . uncategorized/
+    # find wincbtlogs/ -name \*.zevtc | rsync -av --files-from - --no-relative . uncategorized/
 
     return
 
 
 def main():
-    tm = ThreadManger(
-        with_discord=False,
-        upload_logs=False,
-        fullclear_dates=["2022-02-23", "2022-02-24"],
-        guild="ZETA",
-        full_log_load=False,
-    )
+    tm = ThreadManger(upload_logs=True, full_log_load=False)
 
-    # tm.run_application()
-    tm.load_all_logs()
+    tm.run_application()
+    # tm.load_all_logs()
 
 
 if __name__ == "__main__":

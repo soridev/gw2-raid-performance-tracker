@@ -10,7 +10,7 @@ class ConfigHelper:
     def __init__(self) -> None:
         self.base_path = os.path.dirname(__file__)
         self.config_parser = configparser.ConfigParser()
-        self.config_file_path = os.path.join(self.base_path, "config.ini")
+        self.config_file_path = os.path.join(self.base_path, "config/config.ini")
 
         # read configfile
         self.config_parser.read(self.config_file_path)

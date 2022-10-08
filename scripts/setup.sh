@@ -25,7 +25,7 @@ required_dirs=("/var/load/cbtlogs/uncategorized" "/var/load/cbtlogs/out" "/var/l
 for i in "${required_dirs[@]}"
 do
     if [[ ! -e $i ]]; then
-        mkdir $i
+        mkdir -p $i
         chown $given_user:$given_user $i
         echo "created dir: $i and set owner to: $given_user"
     elif [[ ! -d $i ]]; then

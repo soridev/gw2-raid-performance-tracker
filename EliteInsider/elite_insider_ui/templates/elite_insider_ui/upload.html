@@ -1,0 +1,31 @@
+{% extends "elite_insider_ui/skeleton.html" %}
+{% load static %}
+{% block title %}Upload{% endblock %}
+
+{% block style %}
+<style>
+    body {
+        color: white;
+    }
+    #upload-container {
+        padding: 14px;
+    }
+</style>
+{% endblock %}
+
+{% block content  %}
+<div class="container-fluid">
+    <div id="upload-container">
+        <div class="col-sm-5 mb-3">
+            <label for="formFileMultiple" class="form-label">Upload one or multiple files.</label>
+            <input class="form-control" type="file" id="formFileMultiple" multiple>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="{% static 'js/upload.js' %}">
+
+</script>
+{% endblock %}

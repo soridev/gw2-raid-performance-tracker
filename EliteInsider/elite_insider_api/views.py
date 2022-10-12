@@ -1,28 +1,18 @@
 from django.http import HttpResponse
 from rest_framework.views import APIView
-from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework import status
 from elite_insider_api.models import RaidKillTimes, GuildMembers, MechanicInfo, PlayerInfo, RaidEncounters
 from rest_framework import permissions
 from .custom_filters import EICustomFilters
-from .serializers import (
-    FullclearStatsSerializer,
-    GuildMembersSerializer,
-    GuildSerializer,
-    MechanicInfoSerializer,
-    PlayerInfoSerializer,
-    RaidKillTimesSerializer,
-    RaidEncounterSerializer,
-    UploadSerializer,
-)
+from .serializers import *
 
 
 class RaidKillTimesView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        killtimes = RaidKillTimes.objects.all()
+        killtimes = RaidKillTimes.objects.filter(uploaded_by=request.user.username)
         serializer = RaidKillTimesSerializer(killtimes, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -30,16 +20,16 @@ class RaidKillTimesView(APIView):
 class RaidKillTimesDetailsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def get_object(self, log_id):
+    def get_object(self, log_id, user_id):
         """Helper method to get the object with given log_id."""
         try:
-            return RaidKillTimes.objects.get(log_id=log_id)
+            return RaidKillTimes.objects.get(log_id=log_id, uploaded_by=user_id)
         except RaidKillTimes.DoesNotExist:
             return None
 
     def get(self, request, log_id, *args, **kwargs):
         """Retrieves the log with given log_id."""
-        rkt_instance = self.get_object(log_id)
+        rkt_instance = self.get_object(log_id, user_id=request.user.username)
         if not rkt_instance:
             return Response({"res": "Object with this log-id does not exists"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -72,7 +62,7 @@ class GuildMembersDetailsView(APIView):
     def get_object(self, guild_name):
         try:
             return GuildMembers.objects.filter(guild_name=guild_name)
-        except RaidKillTimes.DoesNotExist:
+        except GuildMembers.DoesNotExist:
             return None
 
     def get(self, request, guild_name, *args, **kwargs):
@@ -99,7 +89,7 @@ class MechanicInfoDetailsView(APIView):
     def get_object(self, log_id):
         try:
             return MechanicInfo.objects.filter(log_id=log_id)
-        except RaidKillTimes.DoesNotExist:
+        except MechanicInfo.DoesNotExist:
             return None
 
     def get(self, request, log_id, *args, **kwargs):
@@ -163,20 +153,6 @@ class PlayerInfoDetailsView(APIView):
     #     todo_instance.delete()
     #     return Response({"res": "Object deleted!"}, status=status.HTTP_200_OK)
 
-
-class FullclearStatsDetailsView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get(self, request, guild_name, *args, **kwargs):
-        fullclear_stats = EICustomFilters().get_fullclear_stats(guild_name)
-
-        if not fullclear_stats:
-            return Response({"res": "Object with this guild-name does not exists"}, status=status.HTTP_400_BAD_REQUEST)
-
-        serializer = FullclearStatsSerializer(fullclear_stats, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
 class RaidEncountersView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -192,7 +168,7 @@ class RaidEncountersDetailsView(APIView):
     def get_object(self, encounter_name):
         try:
             return RaidEncounters.objects.filter(encounter_name=encounter_name)
-        except PlayerInfo.DoesNotExist:
+        except RaidEncounters.DoesNotExist:
             return None
 
     def get(self, request, encounter_name, *args, **kwargs):
@@ -217,6 +193,47 @@ class UploadView(APIView):
 
         return Response(response)
 
+#
+# Custom filter section
+#
+
+class LogCount(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        log_count = EICustomFilters().get_log_count()
+        
+        if not log_count:
+            return Response({"res": "Unable to fetch the number of logs."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({'log_count': log_count}, status=status.HTTP_200_OK)
+
+class LogCountDetailsView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        log_count = EICustomFilters().get_log_count(user_id=request.user.username)
+
+        if not log_count:
+            return Response({"res": "Unable to fetch the number of logs for the given user."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({'user': request.user.username, 'log_count': log_count}, status=status.HTTP_200_OK)
+
+class FullclearStatsDetailsView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, guild_name, *args, **kwargs):
+        fullclear_stats = EICustomFilters().get_fullclear_stats(guild_name)
+
+        if not fullclear_stats:
+            return Response({"res": "Object with this guild-name does not exist."}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = FullclearStatsSerializer(fullclear_stats, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+#
+# Entrypoint config.
+#
 
 def Entrypoint(request):
     return HttpResponse("Welcome to the elite-api.")

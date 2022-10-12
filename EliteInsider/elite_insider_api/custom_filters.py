@@ -64,3 +64,20 @@ class EICustomFilters:
 
         except Exception as err:
             raise err
+
+    def get_log_count(self, user_id=None):
+        try:
+            cursor = self.conn.cursor()
+            sql = """SELECT COUNT(*) FROM PUBLIC.RAID_KILL_TIMES"""
+            extension = " WHERE UPLOADED_BY = %s"
+
+            if user_id:
+                cursor.execute(sql + extension, [user_id])
+                return cursor.fetchall()[0][0]
+            else:
+                cursor.execute(sql)
+                return cursor.fetchall()[0][0]
+
+        except Exception as err:
+            raise err
+            

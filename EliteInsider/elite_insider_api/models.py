@@ -17,16 +17,17 @@ class RaidKillTimes(models.Model):
     class Meta:
         db_table = "raid_kill_times"
 
-    log_id = models.CharField(max_length=100, blank=False, primary_key=True)
-    encounter_name = models.CharField(max_length=500, blank=False)
-    qualifying_date = models.DateField(blank=False)
-    start_time = models.DateTimeField(blank=False)
-    end_time = models.DateTimeField(blank=False)
-    kill_duration_seconds = models.FloatField(blank=False)
-    success = models.BooleanField(blank=False)
-    cm = models.BooleanField(blank=False)
-    input_file = models.CharField(max_length=1000, blank=False)
-    link_to_upload = models.CharField(max_length=500, blank=True, null=True)
+    log_id = models.CharField(max_length=100, blank=False, null=False, primary_key=True)
+    encounter_name = models.CharField(max_length=500, null=False)
+    qualifying_date = models.DateField(null=False)
+    start_time = models.DateTimeField(null=False)
+    end_time = models.DateTimeField(null=False)
+    kill_duration_seconds = models.FloatField(null=False)
+    success = models.BooleanField(null=False)
+    cm = models.BooleanField(null=False)
+    input_file = models.CharField(max_length=1000, null=False)
+    link_to_upload = models.CharField(max_length=500, null=True)
+    uploaded_by = models.CharField(max_length=500, null=False, default="admin")
 
 
 class MechanicInfo(models.Model):

@@ -1,4 +1,5 @@
 from django.urls import path
+from rest_framework.authtoken import views as authviews
 from .views import (
     Entrypoint,
     GuildMembersDetailsView,
@@ -18,6 +19,7 @@ from .views import (
 
 urlpatterns = [
     path("", Entrypoint, name="elite-api"),
+    path("api-token-auth/", authviews.obtain_auth_token),
     path("log-registry/", RaidKillTimesView.as_view()),
     path("log-registry/<str:log_id>/", RaidKillTimesDetailsView.as_view()),
     path("guilds/", GuildsView.as_view()),

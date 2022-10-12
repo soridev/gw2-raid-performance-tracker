@@ -19,7 +19,7 @@ from .serializers import (
 
 
 class RaidKillTimesView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         killtimes = RaidKillTimes.objects.all()
@@ -28,7 +28,7 @@ class RaidKillTimesView(APIView):
 
 
 class RaidKillTimesDetailsView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self, log_id):
         """Helper method to get the object with given log_id."""
@@ -48,7 +48,7 @@ class RaidKillTimesDetailsView(APIView):
 
 
 class GuildsView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         guilds = GuildMembers.objects.distinct("guild_name")
@@ -58,7 +58,7 @@ class GuildsView(APIView):
 
 
 class GuildMembersView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         guildmembers = GuildMembers.objects.all()
@@ -67,7 +67,7 @@ class GuildMembersView(APIView):
 
 
 class GuildMembersDetailsView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self, guild_name):
         try:
@@ -85,7 +85,7 @@ class GuildMembersDetailsView(APIView):
 
 
 class MechanicInfoView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         mechanic_infos = MechanicInfo.objects.all()
@@ -94,7 +94,7 @@ class MechanicInfoView(APIView):
 
 
 class MechanicInfoDetailsView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self, log_id):
         try:
@@ -112,7 +112,7 @@ class MechanicInfoDetailsView(APIView):
 
 
 class PlayerInfoView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         player_infos = PlayerInfo.objects.all()
@@ -121,7 +121,7 @@ class PlayerInfoView(APIView):
 
 
 class PlayerInfoDetailsView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self, log_id):
         try:
@@ -165,7 +165,7 @@ class PlayerInfoDetailsView(APIView):
 
 
 class FullclearStatsDetailsView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, guild_name, *args, **kwargs):
         fullclear_stats = EICustomFilters().get_fullclear_stats(guild_name)
@@ -178,7 +178,7 @@ class FullclearStatsDetailsView(APIView):
 
 
 class RaidEncountersView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         raid_encounters = RaidEncounters.objects.all().order_by("raid_wing", "boss_position")
@@ -187,7 +187,7 @@ class RaidEncountersView(APIView):
 
 
 class RaidEncountersDetailsView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self, encounter_name):
         try:
@@ -205,7 +205,7 @@ class RaidEncountersDetailsView(APIView):
 
 
 class UploadView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
     serializer_class = UploadSerializer
 
     def get(self, request):

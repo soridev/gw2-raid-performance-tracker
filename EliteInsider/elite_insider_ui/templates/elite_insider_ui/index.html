@@ -1,0 +1,36 @@
+{% load static %}
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Elite Insider{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+</head>
+    <body>
+        <div class="center">
+            <h1>Login</h1>
+            <form method="post">
+              <div class="txt_field">
+                <input type="text" required>
+                <span></span>
+                <label>Username</label>
+              </div>
+              <div class="txt_field">
+                <input type="password" required>
+                <span></span>
+                <label>Password</label>
+              </div>
+              <div class="pass">Forgot Password?</div>
+              <input type="submit" value="Login">
+              <div class="signup_link">
+                No account yet? <a href="#">Signup</a><br>
+              </div>
+              <div class="legal_link">
+                <a href="#">About</a>
+                -
+                <a href="#">Imprint</a>
+              </div>
+            </form>
+          </div>
+    </body>
+</html>

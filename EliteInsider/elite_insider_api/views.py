@@ -1,3 +1,4 @@
+from cmath import log
 from django.http import HttpResponse
 from django.core.files.storage import FileSystemStorage
 from rest_framework.views import APIView
@@ -206,8 +207,9 @@ class LogCount(APIView):
 
     def get(self, request, *args, **kwargs):
         log_count = EICustomFilters().get_log_count()
-        
-        if not log_count:
+
+        if log_count is None:
+            print(log_count)
             return Response({"res": "Unable to fetch the number of logs."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response({'log_count': log_count}, status=status.HTTP_200_OK)
@@ -218,7 +220,7 @@ class LogCountDetailsView(APIView):
     def get(self, request, *args, **kwargs):
         log_count = EICustomFilters().get_log_count(user_id=request.user.username)
 
-        if not log_count:
+        if log_count is None:
             return Response({"res": "Unable to fetch the number of logs for the given user."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response({'user': request.user.username, 'log_count': log_count}, status=status.HTTP_200_OK)

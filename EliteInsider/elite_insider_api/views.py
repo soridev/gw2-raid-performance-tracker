@@ -1,4 +1,5 @@
 from django.http import HttpResponse
+from django.core.files.storage import FileSystemStorage
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -187,10 +188,13 @@ class UploadView(APIView):
     def get(self, request):
         return Response("There is no GET data for this request.")
 
-    def put(self, request):
-        file_uploaded = request.FILES.get("file_uploaded")
-        response = "Upload successful."
+    def post(self, request):
+        
+        fs = FileSystemStorage()
+        given_file = request.FILES["file"]        
+        file_name = fs.save(given_file.name, given_file)
 
+        response = "Upload successful."
         return Response(response)
 
 #

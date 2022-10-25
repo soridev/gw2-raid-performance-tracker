@@ -1,0 +1,50 @@
+{% load static %}
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Elite Insider{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+</head>
+    <body>
+      <!-- login form -->
+      <div class="center">
+        <form method="post">
+          {% csrf_token %}
+          <div class="login-error-txt">
+            <span>{{ message }}</span>
+          </div>
+          <div class="txt_field">
+            <input type="text" name="username" required>
+            <span></span>
+            <label>Username</label>
+          </div>
+          <div class="txt_field">
+            <input type="password" name="password" required>
+            <span></span>
+            <label>Password</label>
+          </div>
+          <div class="pass">Forgot Password?</div>
+          <input type="submit" value="Login">
+          <div class="signup_link">
+            No account yet? - <a href="#">Signup</a><br>
+          </div>
+          <div class="legal_link">
+            <a href="#">About</a>
+            -
+            <a href="#">Imprint</a>
+          </div>
+        </form>
+      </div>
+      
+      <!-- analytics illustration -->
+      <div class="isometric-illustration">
+        <img src="{% static 'images/analytics_design.svg' %}">  
+      </div>
+
+      <!-- credits footer -->
+      <div class="credit-footer-container">
+        <a class="credit-footer" href="https://www.freepik.com/free-vector/data-analysis-landing-page_4650347.htm" target="_blank">Illustration by pikisuperstar</a>
+      </div>        
+    </body>
+</html>

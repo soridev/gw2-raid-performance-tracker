@@ -12,7 +12,7 @@ def login_view(request):
         return redirect(main)
 
     context = {}
-    template = loader.get_template("elite_insider_ui/index.html")
+    template = loader.get_template("elite_insider_ui/login.html")
     
     if request.method == "GET":
         return HttpResponse(template.render(context, request))
@@ -35,6 +35,12 @@ def logout_view(request):
     return redirect(login_view)
 
 def main(request):
+    context = {}
+    template = loader.get_template("elite_insider_ui/index.html")
+
+    return HttpResponse(template.render(context, request))
+
+def dashboard(request):
     context = {}
     template = loader.get_template("elite_insider_ui/dashboard.html")
 

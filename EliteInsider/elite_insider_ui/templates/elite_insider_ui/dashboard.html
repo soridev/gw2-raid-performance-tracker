@@ -2,17 +2,9 @@
 {% load static %}
 {% block title %}Dashboard{% endblock %}
 
-{% block style %}
-<style>
-    #chart-container{
-        padding: 13px;
-    }
-</style>
-{% endblock %}
-
 {% block content  %}
 <div class="container-fluid">
-    <div id="chart-container">
+    <div id="chart-container" style="padding: 25px;">
         <div id="gkt-overview-chart"></div>
     </div>
 </div>

@@ -1,4 +1,4 @@
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import redirect
 from django.http import HttpResponse
 from django.template import loader
@@ -6,7 +6,7 @@ from .forms import LoginForm
 
 # Create your views here.
 
-def user_login(request):
+def login_view(request):
     
     if request.user.is_authenticated:
         return redirect(main)
@@ -28,6 +28,11 @@ def user_login(request):
 
         context.update({'message': 'Invalid username / password.'})
         return HttpResponse(template.render(context, request))
+
+def logout_view(request):
+    
+    logout(request)    
+    return redirect(login_view)
 
 def main(request):
     context = {}

@@ -7,35 +7,20 @@
     <link rel="stylesheet" href="{% static 'css/login.css' %}">
 </head>
     <body>
-      <!-- app title -->
-      <!--
-      <div class="app-title">
-        <span style="--i:1">E</span>
-        <span style="--i:2">L</span>
-        <span style="--i:3">I</span>
-        <span style="--i:4">T</span>
-        <span style="--i:5">E</span>
-        <span style="--i:6">-</span>
-        <span style="--i:7">I</span>
-        <span style="--i:8">N</span>
-        <span style="--i:9">S</span>
-        <span style="--i:10">I</span>
-        <span style="--i:11">D</span>
-        <span style="--i:12">E</span>
-        <span style="--i:13">R</span>
-      </div>
-      -->
-
       <!-- login form -->
       <div class="center">
         <form method="post">
+          {% csrf_token %}
+          <div class="login-error-txt">
+            <span>{{ message }}</span>
+          </div>
           <div class="txt_field">
-            <input type="text" required>
+            <input type="text" name="username" required>
             <span></span>
             <label>Username</label>
           </div>
           <div class="txt_field">
-            <input type="password" required>
+            <input type="password" name="password" required>
             <span></span>
             <label>Password</label>
           </div>

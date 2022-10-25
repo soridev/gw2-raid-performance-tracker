@@ -118,6 +118,13 @@ input[type="submit"]:hover{
 .legal_link a:hover {
   text-decoration: underline;
 }
+
+.login-error-txt {
+  margin-top: 12px;
+  text-align: center;
+  color: red;
+}
+
 .isometric-illustration {
   position: absolute;
   z-index: 5;
@@ -139,28 +146,4 @@ input[type="submit"]:hover{
   font-size: 12px;
   text-decoration: none;
   margin-top: 14px;
-}
-
-.app-title {
-  position: absolute;
-  top: 15%;
-  left: 30%;
-  transform: translate(-50%, -50%);
-}
-
-.app-title span {
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
-  font-size: 30pt;
-  text-shadow: 2px 2px #340cac;
-  position: relative;
-  display: inline-block;
-  color: #fff;
-  text-transform: uppercase;
-  animation: flip 1s normal;
-  animation-delay: calc(.1s * var(--i));
-}
-@keyframes flip {
-  0%,80% {
-    transform: rotateY(360deg) 
-  }
 }

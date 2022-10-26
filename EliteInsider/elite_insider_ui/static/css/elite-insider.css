@@ -4,6 +4,8 @@
   --first-color: #0D324D;
   --first-color-light: #AFA5D9;
   --white-color: #F7F6FB;
+  --accent-color-1: #03DAC5;
+  --accent-color-2: #7F5A83;
   --body-font: "Nunito", sans-serif;
   --normal-font-size: 1rem;
   --page-background: linear-gradient(to top left,#0D324D, #7F5A83);
@@ -174,4 +176,13 @@ a {
   .body-pd {
     padding-left: calc(var(--nav-width) + 188px);
   }
+}
+.main-content {
+  padding: 20px;
+}
+
+.content-container {
+  background-color: var(--first-color);
+  padding: 16px;
+  border-radius: 5px;
 }/*# sourceMappingURL=elite-insider.css.map */

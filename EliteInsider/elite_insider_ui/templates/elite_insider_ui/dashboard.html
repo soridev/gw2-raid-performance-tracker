@@ -1,11 +1,15 @@
 {% extends "elite_insider_ui/skeleton.html" %}
 {% load static %}
-{% block title %}Dashboard{% endblock %}
+{% block title %}Elite Insider - Dashboard{% endblock %}
 
 {% block content  %}
-<div class="container-fluid">
-    <div id="chart-container" style="padding: 25px;">
-        <div id="gkt-overview-chart"></div>
+<div class="container-fluid main-content">
+    <div class="row">
+        <div class="col">
+            <div class="content-container">
+                <canvas id="fc-chart" height="80"></canvas>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

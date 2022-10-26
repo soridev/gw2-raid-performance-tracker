@@ -76,7 +76,9 @@ class FullclearStatsSerializer(serializers.Serializer):
     qualifying_date = serializers.DateField()
     encounter_name = serializers.CharField()
     cm = serializers.BooleanField()
-    kd_sec = serializers.DecimalField(16, 2)
+    start_time = serializers.DateTimeField()
+    end_time = serializers.DateTimeField()
+    kill_duration_seconds = serializers.DecimalField(16, 2)
 
 
 class UploadSerializer(serializers.Serializer):

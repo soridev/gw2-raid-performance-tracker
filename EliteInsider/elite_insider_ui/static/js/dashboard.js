@@ -17,7 +17,7 @@ function initGraph() {
 
             for (let i = 0; i < data.length; i++) {
                 labels.push(data[i].encounter_name);
-                ktTime.push(data[i].kd_sec);
+                ktTime.push(data[i].kill_duration_seconds);
             }
 
             let ktData = [{
@@ -45,9 +45,14 @@ function initGraph() {
                     },
                     scales: {
                         x: {
-                          grid: {
-                            display: false,
-                          }
+                            ticks: {
+                                autoSkip: false,
+                                maxRotation: 90,
+                                minRotation: 90,
+                            },
+                            grid: {
+                                display: false,
+                            }
                         },
                         y: {
                           grid: {

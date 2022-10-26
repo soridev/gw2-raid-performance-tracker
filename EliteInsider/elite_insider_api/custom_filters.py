@@ -15,7 +15,7 @@ class EICustomFilters:
             database=ConfigHelper().get_config_item("postgres-db", "database_name"),
         )
 
-    def get_fullclear_stats(self, guild_name: str) -> List[Dict]:
+    def get_fullclear_stats(self, guild_name: str, week: int=None) -> List[Dict]:
         try:
             cursor = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
             sql = """
@@ -23,38 +23,22 @@ class EICustomFilters:
                     qualifying_date,
                     encounter_name,
                     cm,
-                    cast(min(kill_duration_seconds) as decimal(16,2)) as "kd_sec"
+                    start_time ,
+                    end_time, 
+                    kill_duration_seconds 
                 from
                     public.raid_kill_times rkt
                 where
                     success
                     and kill_duration_seconds > 10
-                    and log_id in (
-                    select
-                        log_id
-                    from
-                        (
-                        select
-                            rkt.log_id,
-                            rkt.qualifying_date ,
-                            rkt.encounter_name ,
-                            count(gm.account_name) as "GUILD_COUNT"
-                        from
-                            public.raid_kill_times rkt
-                        inner join public.player_info p on
-                            rkt.log_id = p.log_id
-                        left outer join public.guild_members gm on
-                            p.account_name = gm.account_name
-                        where gm.guild_name = %s
-                        group by 1,2,3 )as lwgm
-                    where
-                        "GUILD_COUNT" >= 6)
-                group by qualifying_date, encounter_name, cm
+                    and log_id in (select log_id from public.guild_logs gl where guild_name = %s)
+                    and cast(CONCAT(date_part('isoyear', qualifying_date), TO_CHAR(date_part('week', qualifying_date), 'fm00')) as int) = 
+                    (select max(yearweek) from public.guild_logs where guild_name = %s)
                 order by
-                    qualifying_date asc
+                    start_time asc
             """
 
-            cursor.execute(sql, [guild_name])
+            cursor.execute(sql, [guild_name, guild_name])
             result = []
 
             for row in cursor.fetchall():

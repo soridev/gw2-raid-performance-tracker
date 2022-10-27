@@ -237,6 +237,19 @@ class FullclearStatsDetailsView(APIView):
         serializer = FullclearStatsSerializer(fullclear_stats, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+class FullclearWingStatsDetailsView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, guild_name, *args, **kwargs):
+        wing_stats = EICustomFilters().get_wing_stats(guild_name=guild_name)
+
+        if not wing_stats:
+            return Response({"res": "Object with this guild-name does not exist."}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = WingStatSerializer(wing_stats, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 #
 # Entrypoint config.
 #

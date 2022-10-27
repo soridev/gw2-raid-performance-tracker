@@ -80,6 +80,13 @@ class FullclearStatsSerializer(serializers.Serializer):
     end_time = serializers.DateTimeField()
     kill_duration_seconds = serializers.DecimalField(16, 2)
 
+class WingStatSerializer(serializers.Serializer):
+    start_time = serializers.DateTimeField()
+    end_time = serializers.DateTimeField()
+    qualifying_date = serializers.DateField()
+    raid_wing = serializers.DecimalField(16,2)
+    wing_name = serializers.CharField()
+
 
 class UploadSerializer(serializers.Serializer):
     file_uploaded = FileField()

@@ -17,6 +17,7 @@ urlpatterns = [
     path("player-info/", PlayerInfoView.as_view()),
     path("player-info/<str:log_id>/", PlayerInfoDetailsView.as_view()),
     path("fullclear-stats/<str:guild_name>/", FullclearStatsDetailsView.as_view()),
+    path("fullclear-wing-stats/<str:guild_name>/", FullclearWingStatsDetailsView.as_view()),
     path("raid-encounters/", RaidEncountersView.as_view()),
     path("raid-encounters/<str:encounter_name>/", RaidEncountersDetailsView.as_view()),
     path("upload/", UploadView.as_view()),

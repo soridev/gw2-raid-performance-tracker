@@ -49,6 +49,45 @@ class EICustomFilters:
         except Exception as err:
             raise err
 
+
+    def get_wing_stats(self, guild_name: str, week: int=None) -> List[Dict]:
+        try:
+            cursor = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            sql = """
+                select
+                    min(start_time) as start_time,
+                    max(end_time) as end_time, 
+                    rkt.qualifying_date,
+                    re.raid_wing,
+                    re.wing_name
+                from
+                    public.raid_kill_times rkt
+                    inner join public.raid_encounters re ON replace(rkt.encounter_name::text, ' CM'::text, ''::text) = re.encounter_name::text
+                where
+                    success
+                    and kill_duration_seconds > 10
+                    and log_id in (select log_id from public.guild_logs gl where guild_name = %s)
+                    and cast(CONCAT(date_part('isoyear', qualifying_date), TO_CHAR(date_part('week', qualifying_date), 'fm00')) as int) = 
+                    (select max(yearweek) from public.guild_logs where guild_name = %s)
+                group by 
+                    rkt.qualifying_date,
+                    re.raid_wing,
+                    re.wing_name
+                order by
+                    start_time asc
+            """
+
+            cursor.execute(sql, [guild_name, guild_name])
+            result = []
+
+            for row in cursor.fetchall():
+                result.append(dict(row))
+
+            return result
+
+        except Exception as err:
+            raise err
+
     def get_log_count(self, user_id=None):
         try:
             cursor = self.conn.cursor()

@@ -3,17 +3,39 @@ var defaultColorLayout = {
     borderColor : "#F7F6FB",
 }
 
+
+
 function initGraph() {
+    
+    let width, height, gradient;
+
     function initColorLayout() {
         Chart.defaults.color = defaultColorLayout.textColor;
         Chart.defaults.borderColor = defaultColorLayout.borderColor;
     }
 
-    function initBarChart() {
+    function getGradient(ctx, chartArea) {
+        const chartWidth = chartArea.right - chartArea.left;
+        const chartHeight = chartArea.bottom - chartArea.top;
+        if (!gradient || width !== chartWidth || height !== chartHeight) {
+        // Create the gradient because this is either the first render
+        // or the size of the chart has changed
+        width = chartWidth;
+        height = chartHeight;
+        gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+        gradient.addColorStop(0, "#03DAC5");
+        gradient.addColorStop(0.5, "#02998a");
+        gradient.addColorStop(1, "#03DAC5");
+        }
+    
+        return gradient;
+    }
+
+    function initFcChart() {
         axios.get(restAPIUrl + "fullclear-stats/ZETA/").then(function (response) {
             let data = response.data;
-            let labels = []
-            let ktTime = []
+            let labels = [];
+            let ktTime = [];
 
             for (let i = 0; i < data.length; i++) {
                 labels.push(data[i].encounter_name);
@@ -22,7 +44,16 @@ function initGraph() {
 
             let ktData = [{
                 label: "kill time in seconds",
-                backgroundColor: "#03DAC5",
+                backgroundColor: function(context) {
+                    const chart = context.chart;
+                    const {ctx, chartArea} = chart;
+
+                    if (!chartArea) {
+                    // This case happens on initial chart load
+                    return;
+                    }
+                    return getGradient(ctx, chartArea);
+                },
                 borderColor: "#03DAC5",
                 data: ktTime,
             }];
@@ -72,9 +103,84 @@ function initGraph() {
             );
         });
     }
+
+    function initWingTimeChart() {
+        axios.get(restAPIUrl + "fullclear-wing-stats/ZETA/").then(function (response) {
+            let data = response.data;
+            let minValue = null;
+            let labels = [];
+            let timeData = [];
+
+            for (let i = 0; i < data.length; i++) {
+                if(minValue == null){
+                    minValue = data[i].start_time;
+                    console.log(minValue);
+                }
+
+                labels.push(data[i].wing_name);
+                timeData.push([data[i].start_time, data[i].end_time]);
+            }
+
+            let dataSet = [{
+                label: "Time spend in minutes",
+                data:  timeData,
+                borderColor: "#03DAC5",
+                backgroundColor: "#03DAC5",
+                barPercentage: 0.3,
+            }];
+
+            let chartData = {
+                labels: labels,
+                datasets: dataSet,
+            };
+
+            let config = {
+                type: 'bar',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    indexAxis: 'y',
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: "Most recent fullclear by wing performance",
+                        },
+                    },
+                    scales: {
+                        x: {
+                            min: minValue,
+                            type: "time",
+                            //time: {
+                            //   unit: "hour",
+                            //},
+                            grid: {
+                                display: false,
+                            }
+                        },
+                        y: {
+                          beginAtZero: true,
+                          grid: {
+                            display: false,
+                          }
+                        }
+                    },
+                    layout: {
+                        autoPadding: true,
+                    },
+                }
+            };
+
+            let wingTimeChart = new Chart(
+                document.getElementById('wing-time-chart'),
+                config
+            );
+        });
+    }
+
     function init() {
         initColorLayout();
-        initBarChart();
+        initFcChart();
+        initWingTimeChart();
     }
     init();
 }

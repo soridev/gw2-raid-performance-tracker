@@ -114,7 +114,6 @@ function initGraph() {
             for (let i = 0; i < data.length; i++) {
                 if(minValue == null){
                     minValue = data[i].start_time;
-                    console.log(minValue);
                 }
 
                 labels.push(data[i].wing_name);

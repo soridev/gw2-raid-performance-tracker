@@ -5,6 +5,12 @@ var defaultColorLayout = {
 
 var fcChart, wtChart;
 
+function getMinDiff(startDate, endDate) {
+    const msInMinute = 60 * 1000;
+
+    return Math.round(Math.abs(endDate - startDate) / msInMinute); 
+}
+
 function initMenuBar(){
     $("#btn-update-charts").click(function() {
         let yearweekString = $("#week-picker").val();
@@ -170,14 +176,33 @@ function initGraph(week=null) {
                             display: true,
                             text: "Most recent fullclear by wing performance",
                         },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const startDate = new Date(context.parsed._custom.barStart);
+                                    const stopDate = new Date(context.parsed._custom.barEnd);
+
+                                    const cleanedStartTs = startDate.toLocaleString();
+                                    const cleanedEndTs = stopDate.toLocaleString();
+                                    const duration = getMinDiff(startDate, stopDate);
+
+                                    const returnMessage = []
+                                    returnMessage.push("Start: " + cleanedStartTs);
+                                    returnMessage.push("End: " + cleanedEndTs);
+                                    returnMessage.push("Duration: " + duration + " minutes");
+
+                                    return returnMessage
+                                }
+                            }
+                        }
                     },
                     scales: {
                         x: {
                             min: minValue,
                             type: "time",
-                            //time: {
-                            //   unit: "hour",
-                            //},
+                            time: {
+                                tooltipFormat: "dd.MM.YYYY HH:mm:ss",
+                            },
                             grid: {
                                 display: false,
                             }

@@ -1,9 +1,6 @@
 var newGuild = false;
 
 function initUI() {
-    function initCreateButton() {
-        $("#")
-    }
     function initGuildDropdown() {
         axios.get(restAPIUrl + "guilds/").then(function (response) {
             let data = response.data;
@@ -44,7 +41,6 @@ function initUI() {
     }
 
     function init() {
-        initCreateButton();
         initGuildDropdown();
     }
     init();

@@ -1,0 +1,47 @@
+:root {
+  --header-height: 3rem;
+  --nav-width: 68px;
+  --first-color: #0D324D;
+  --first-color-light: #AFA5D9;
+  --white-color: #F7F6FB;
+  --accent-color-1: #03DAC5;
+  --accent-color-2: #7F5A83;
+  --button-primary: #02998a;
+  --body-font: "Nunito", sans-serif;
+  --normal-font-size: 1rem;
+  --page-background: linear-gradient(to top left,#0D324D, #7F5A83);
+  --z-fixed: 100 ;
+}
+
+.guild-config-container {
+  width: 80%;
+  position: relative;
+  margin: 1% auto;
+}
+
+.guild-config-item {
+  margin-bottom: 5px;
+}
+
+.guild-config-item-checkbox {
+  padding: 7px;
+}
+
+textarea {
+  /* margin:0px 0px; this is redundant anyways since its specified below*/
+  padding-top: 10px;
+  padding-bottom: 25px; /* increased! */
+  /* height:16px; */
+  /* line-height:16px; */
+  width: 100%; /* changed from 96 to 100% */
+  display: block;
+  /* margin:0px auto; not needed since i have width 100% now */
+}
+
+#btn-save-guild {
+  margin-left: auto;
+}
+
+#guild-config-body {
+  display: none;
+}/*# sourceMappingURL=guilds.css.map */

@@ -1,0 +1,29 @@
+@import "globals";
+
+.guild-config-container{
+    width: 80%;
+    position: relative;
+    margin: 1% auto;
+}    
+.guild-config-item {
+    margin-bottom: 5px;
+}    
+.guild-config-item-checkbox{
+    padding: 7px;
+}
+textarea {
+    /* margin:0px 0px; this is redundant anyways since its specified below*/
+    padding-top:10px;
+    padding-bottom:25px; /* increased! */
+    /* height:16px; */
+    /* line-height:16px; */
+    width:100%; /* changed from 96 to 100% */
+    display:block;
+    /* margin:0px auto; not needed since i have width 100% now */
+}
+#btn-save-guild{
+    margin-left: auto;
+}
+#guild-config-body{
+    display: none;
+}

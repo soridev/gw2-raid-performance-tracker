@@ -1,17 +1,5 @@
-:root{
-    --header-height: 3rem;
-    --nav-width: 68px;
-    --first-color: #0D324D;
-    --first-color-light: #AFA5D9;
-    --white-color: #F7F6FB;
-    --accent-color-1: #03DAC5;
-    --accent-color-2: #7F5A83;
-    --button-primary: #02998a;
-    --body-font: 'Nunito', sans-serif;
-    --normal-font-size: 1rem;
-    --page-background: linear-gradient(to top left,#0D324D, #7F5A83);
-    --z-fixed: 100
-}
+@import "globals";
+
 *,::before,::after{
     box-sizing: border-box
 }
@@ -24,6 +12,7 @@ body{
     font-size: var(--normal-font-size);
     transition: .5s;
     background: var(--page-background);
+    color: var(--white-color);
 }
 a{
     text-decoration: none
@@ -164,6 +153,10 @@ a{
     background-color: var(--first-color);
     padding: 16px;
     border-radius: 5px;
+}
+
+.btn {
+    color: var(--white-color);
 }
 
 .ei-button-primary {

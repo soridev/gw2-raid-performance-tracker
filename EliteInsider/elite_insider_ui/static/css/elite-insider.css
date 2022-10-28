@@ -25,6 +25,7 @@ body {
   font-size: var(--normal-font-size);
   transition: 0.5s;
   background: var(--page-background);
+  color: var(--white-color);
 }
 
 a {
@@ -186,6 +187,10 @@ a {
   background-color: var(--first-color);
   padding: 16px;
   border-radius: 5px;
+}
+
+.btn {
+  color: var(--white-color);
 }
 
 .ei-button-primary {

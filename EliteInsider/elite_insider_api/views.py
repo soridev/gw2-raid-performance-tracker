@@ -229,7 +229,8 @@ class FullclearStatsDetailsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, guild_name, *args, **kwargs):
-        fullclear_stats = EICustomFilters().get_fullclear_stats(guild_name)
+        yearweek_filter = self.request.query_params.get("yearweek")
+        fullclear_stats = EICustomFilters().get_fullclear_stats(guild_name, week=yearweek_filter)
 
         if not fullclear_stats:
             return Response({"res": "Object with this guild-name does not exist."}, status=status.HTTP_400_BAD_REQUEST)
@@ -240,8 +241,9 @@ class FullclearStatsDetailsView(APIView):
 class FullclearWingStatsDetailsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request, guild_name, *args, **kwargs):
-        wing_stats = EICustomFilters().get_wing_stats(guild_name=guild_name)
+    def get(self, request, guild_name, *args, **kwargs):        
+        yearweek_filter = self.request.query_params.get("yearweek")
+        wing_stats = EICustomFilters().get_wing_stats(guild_name=guild_name, week=yearweek_filter)
 
         if not wing_stats:
             return Response({"res": "Object with this guild-name does not exist."}, status=status.HTTP_400_BAD_REQUEST)

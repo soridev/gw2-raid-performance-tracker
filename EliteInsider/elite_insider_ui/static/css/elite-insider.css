@@ -6,6 +6,7 @@
   --white-color: #F7F6FB;
   --accent-color-1: #03DAC5;
   --accent-color-2: #7F5A83;
+  --button-primary: #02998a;
   --body-font: "Nunito", sans-serif;
   --normal-font-size: 1rem;
   --page-background: linear-gradient(to top left,#0D324D, #7F5A83);
@@ -185,4 +186,17 @@ a {
   background-color: var(--first-color);
   padding: 16px;
   border-radius: 5px;
+}
+
+.ei-button-primary {
+  background: var(--button-primary);
+  color: var(--white-color);
+  border-color: transparent;
+  transition: border-color 0.2s;
+}
+
+.ei-button-primary:hover {
+  background: var(--button-primary);
+  color: var(--white-color);
+  border-color: var(--white-color);
 }/*# sourceMappingURL=elite-insider.css.map */

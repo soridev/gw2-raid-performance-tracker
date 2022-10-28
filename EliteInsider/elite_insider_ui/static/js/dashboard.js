@@ -3,9 +3,18 @@ var defaultColorLayout = {
     borderColor : "#F7F6FB",
 }
 
+var fcChart, wtChart;
 
+function initMenuBar(){
+    $("#btn-update-charts").click(function() {
+        let yearweekString = $("#week-picker").val();
+        yearweekString = yearweekString.replace("-W", "");
 
-function initGraph() {
+        initGraph(week=yearweekString);
+    });
+}
+
+function initGraph(week=null) {
     
     let width, height, gradient;
 
@@ -32,7 +41,12 @@ function initGraph() {
     }
 
     function initFcChart() {
-        axios.get(restAPIUrl + "fullclear-stats/ZETA/").then(function (response) {
+        fetchUrl = restAPIUrl + "fullclear-stats/ZETA/";
+        if (week) {
+            fetchUrl += "?yearweek=" + week;
+        }
+
+        axios.get(fetchUrl).then(function (response) {
             let data = response.data;
             let labels = [];
             let ktTime = [];
@@ -97,15 +111,27 @@ function initGraph() {
                 }
             };
 
-            let fcChart = new Chart(
-                document.getElementById('fc-chart'),
-                config
-            );
+            if(fcChart) {
+                fcChart.data.labels = labels;
+                fcChart.data.datasets = ktData;
+                fcChart.update();
+            }
+            else{
+                fcChart = new Chart(
+                    document.getElementById('fc-chart'),
+                    config
+                );
+            }
         });
     }
 
     function initWingTimeChart() {
-        axios.get(restAPIUrl + "fullclear-wing-stats/ZETA/").then(function (response) {
+        fetchUrl = restAPIUrl + "fullclear-wing-stats/ZETA/";
+        if (week) {
+            fetchUrl += "?yearweek=" + week;
+        }
+
+        axios.get(fetchUrl).then(function (response) {
             let data = response.data;
             let minValue = null;
             let labels = [];
@@ -169,10 +195,18 @@ function initGraph() {
                 }
             };
 
-            let wingTimeChart = new Chart(
-                document.getElementById('wing-time-chart'),
-                config
-            );
+            if(wtChart) {
+                wtChart.data.labels = labels;
+                wtChart.data.datasets = dataSet;
+                wtChart.options.scales.x.min = minValue;
+                wtChart.update();
+            }
+            else{
+                wtChart = new Chart(
+                    document.getElementById('wing-time-chart'),
+                    config
+                );
+            }
         });
     }
 
@@ -185,5 +219,6 @@ function initGraph() {
 }
 
 window.onload = function () {
+    initMenuBar();
     initGraph();
 }

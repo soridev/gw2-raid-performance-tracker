@@ -18,6 +18,9 @@ class EICustomFilters:
     def get_fullclear_stats(self, guild_name: str, week: int=None) -> List[Dict]:
         try:
             cursor = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            last_fc_filter = """(select max(yearweek) from public.guild_logs where guild_name = %s)"""
+            specific_week_filter = """%s"""
+
             sql = """
                 select
                     qualifying_date,
@@ -33,12 +36,21 @@ class EICustomFilters:
                     and kill_duration_seconds > 10
                     and log_id in (select log_id from public.guild_logs gl where guild_name = %s)
                     and cast(CONCAT(date_part('isoyear', qualifying_date), TO_CHAR(date_part('week', qualifying_date), 'fm00')) as int) = 
-                    (select max(yearweek) from public.guild_logs where guild_name = %s)
+                    {filter_clause}
                 order by
                     start_time asc
             """
 
-            cursor.execute(sql, [guild_name, guild_name])
+            arguments = []
+
+            if week:
+                sql = sql.format(filter_clause=specific_week_filter)
+                arguments = [guild_name, week]
+            else:
+                sql = sql.format(filter_clause=last_fc_filter)
+                arguments = [guild_name, guild_name]
+
+            cursor.execute(sql, arguments)
             result = []
 
             for row in cursor.fetchall():
@@ -53,6 +65,9 @@ class EICustomFilters:
     def get_wing_stats(self, guild_name: str, week: int=None) -> List[Dict]:
         try:
             cursor = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            last_fc_filter = """(select max(yearweek) from public.guild_logs where guild_name = %s)"""
+            specific_week_filter = """%s"""
+
             sql = """
                 select
                     min(start_time) as start_time,
@@ -68,7 +83,7 @@ class EICustomFilters:
                     and kill_duration_seconds > 10
                     and log_id in (select log_id from public.guild_logs gl where guild_name = %s)
                     and cast(CONCAT(date_part('isoyear', qualifying_date), TO_CHAR(date_part('week', qualifying_date), 'fm00')) as int) = 
-                    (select max(yearweek) from public.guild_logs where guild_name = %s)
+                    {filter_clause}
                 group by 
                     rkt.qualifying_date,
                     re.raid_wing,
@@ -77,7 +92,16 @@ class EICustomFilters:
                     start_time asc
             """
 
-            cursor.execute(sql, [guild_name, guild_name])
+            arguments = []
+
+            if week:
+                sql = sql.format(filter_clause=specific_week_filter)
+                arguments = [guild_name, week]
+            else:
+                sql = sql.format(filter_clause=last_fc_filter)
+                arguments = [guild_name, guild_name]
+
+            cursor.execute(sql, arguments)
             result = []
 
             for row in cursor.fetchall():

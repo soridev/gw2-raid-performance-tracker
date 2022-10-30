@@ -293,7 +293,7 @@ class UserGuildsDetailsView(APIView):
         user_guilds = self.get_object(account_name)
 
         if not user_guilds:
-            return Response({"res": "This user has no configured guilds."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"res": "This user has no configured guilds.", "status_code": 404}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = UserGuildsSerializer(user_guilds, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

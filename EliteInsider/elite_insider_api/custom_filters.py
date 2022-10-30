@@ -127,4 +127,28 @@ class EICustomFilters:
 
         except Exception as err:
             raise err
-            
+
+    def get_users_guilds(self, account_name):
+        try:
+            cursor = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            sql = """
+                select 
+                    guild_name 
+                from
+                    public.guild_members 
+                    where 
+                        account_name = %s"""
+
+            arguments = [account_name]
+            cursor.execute(sql, arguments)
+
+            result = []
+
+            for row in cursor.fetchall():
+                result.append(dict(row))
+
+            return result
+
+        except Exception as err:
+            raise err
+

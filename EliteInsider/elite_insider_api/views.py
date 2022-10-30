@@ -4,7 +4,7 @@ from django.core.files.storage import FileSystemStorage
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from elite_insider_api.models import RaidKillTimes, GuildMembers, MechanicInfo, PlayerInfo, RaidEncounters
+from elite_insider_api.models import RaidKillTimes, GuildMembers, MechanicInfo, PlayerInfo, RaidEncounters, UserProfiles
 from rest_framework import permissions
 from .custom_filters import EICustomFilters
 from .serializers import *
@@ -249,6 +249,53 @@ class FullclearWingStatsDetailsView(APIView):
             return Response({"res": "Object with this guild-name does not exist."}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = WingStatSerializer(wing_stats, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class UserProfilesDetailsView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self, username):
+        try:
+            return UserProfiles.objects.get(username=username)
+        except UserProfiles.DoesNotExist:
+            return None
+
+    def get(self, request, *args, **kwargs):
+        user_profile = self.get_object(request.user.username)
+        if not user_profile:
+            return Response({"res": "This user has no configured profile yet."}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = UserProfileSerializer(user_profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class UserGuildsDetailsView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_account_name(self, username):
+        try:
+            up = UserProfiles.objects.get(username=username)
+            data = UserProfileSerializer(up).data
+            return data["account_name"]
+
+        except UserProfiles.DoesNotExist:
+            return None
+
+
+    def get_object(self, account_name):
+        try:
+            user_guilds = EICustomFilters().get_users_guilds(account_name)
+            return user_guilds
+        except Exception as err:
+            return None
+
+    def get(self, request, *args, **kwargs):
+        account_name = self.get_account_name(request.user.username)
+        user_guilds = self.get_object(account_name)
+
+        if not user_guilds:
+            return Response({"res": "This user has no configured guilds."}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = UserGuildsSerializer(user_guilds, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 

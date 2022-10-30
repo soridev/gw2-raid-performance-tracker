@@ -1,7 +1,10 @@
 from django.forms import FileField
 from rest_framework import serializers
-from .models import GuildMembers, MechanicInfo, PlayerInfo, RaidEncounters, RaidKillTimes
+from .models import GuildMembers, MechanicInfo, PlayerInfo, RaidEncounters, RaidKillTimes, UserProfiles
 
+#
+# Model Serializers
+#
 
 class GuildSerializer(serializers.ModelSerializer):
     class Meta:
@@ -71,6 +74,17 @@ class RaidEncounterSerializer(serializers.ModelSerializer):
             "wing_name",
         ]
 
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfiles
+        fields = [
+            "username",
+            "account_name"
+        ]
+
+#
+# Custom Serializers
+#
 
 class FullclearStatsSerializer(serializers.Serializer):
     qualifying_date = serializers.DateField()
@@ -93,3 +107,6 @@ class UploadSerializer(serializers.Serializer):
 
     class Meta:
         fields = ["file_uploaded"]
+
+class UserGuildsSerializer(serializers.Serializer):
+    guild_name = serializers.CharField()

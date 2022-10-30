@@ -67,3 +67,11 @@ class RaidEncounters(models.Model):
     boss_position = models.IntegerField(blank=False)
     relevant_boss = models.BooleanField(blank=False)
     wing_name = models.CharField(max_length=100, blank=False)
+
+class UserProfiles(models.Model):
+    class Meta:
+        db_table = "user_profiles"
+
+    username = models.CharField(max_length=200, blank=False, primary_key=True)
+    account_name = models.CharField(max_length=200, blank=False, null=False)
+    gw2_api_key = models.CharField(max_length=200, blank=False, null=True)

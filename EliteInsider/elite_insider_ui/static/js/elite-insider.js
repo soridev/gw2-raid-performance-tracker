@@ -16,19 +16,28 @@ function checkGuildCookie() {
                 openGuildSelectionModal();
             }
             else{
-                Cookies.set("ei_selected_guild", data[0].guild_name);
+                Cookies.set("ei_selected_guild", data[0].guild_name, {expires: 1});
             }
         })
         .catch(function (error) {
             if(error.response.data.status_code === 404){
-                Cookies.set("ei_selected_guild", "none-configured");
+                Cookies.set("ei_selected_guild", "none-configured", {expires: 1});
             }
         });
     }
 }
 
+function getSelectedGuild() {
+    if(Cookies.get("ei_selected_guild") === undefined || Cookies.get("ei_selected_guild") === "none-configured"){
+        return null;
+    }
+    else {
+        return Cookies.get("ei_selected_guild");
+    }
+}
+
 function guildSelectionClick(data) {
-    Cookies.set("ei_selected_guild", data);
+    Cookies.set("ei_selected_guild", data, {expires: 1});
     guildSelectorModal.hide();
 }
 

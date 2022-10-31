@@ -23,6 +23,12 @@ function initMenuBar(){
 function initGraph(week=null) {
     
     let width, height, gradient;
+    let selectedGuild = getSelectedGuild();
+    let noGuild = false;
+
+    if(selectedGuild === null) {
+        noGuild = true;
+    }
 
     function initColorLayout() {
         Chart.defaults.color = defaultColorLayout.textColor;
@@ -47,7 +53,11 @@ function initGraph(week=null) {
     }
 
     function initFcChart() {
-        fetchUrl = restAPIUrl + "fullclear-stats/ZETA/";
+        if (noGuild){
+            return;
+        }
+
+        let fetchUrl = restAPIUrl + "fullclear-stats/" + selectedGuild + "/";
         if (week) {
             fetchUrl += "?yearweek=" + week;
         }
@@ -132,7 +142,11 @@ function initGraph(week=null) {
     }
 
     function initWingTimeChart() {
-        fetchUrl = restAPIUrl + "fullclear-wing-stats/ZETA/";
+        if(noGuild){
+            return;
+        }
+
+        fetchUrl = restAPIUrl + "fullclear-wing-stats/"+ selectedGuild + "/";
         if (week) {
             fetchUrl += "?yearweek=" + week;
         }

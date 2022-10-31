@@ -39,6 +39,12 @@ function getSelectedGuild() {
 function guildSelectionClick(data) {
     Cookies.set("ei_selected_guild", data, {expires: 1});
     guildSelectorModal.hide();
+    window.location.reload();
+}
+
+function selectGuildClick() {
+    Cookies.remove('ei_selected_guild')
+    checkGuildCookie();
 }
 
 function openGuildSelectionModal() {

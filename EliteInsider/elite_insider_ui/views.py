@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate, login, logout
+from django.views.decorators.cache import never_cache
 from django.shortcuts import redirect
 from django.http import HttpResponse
 from django.template import loader
@@ -34,6 +35,7 @@ def logout_view(request):
     logout(request)    
     return redirect(login_view)
 
+@never_cache
 def main(request):
     context = {}
     template = loader.get_template("elite_insider_ui/index.html")

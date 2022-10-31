@@ -1,12 +1,16 @@
+var guildSelectorModal;
+
 function checkGuildCookie() {
     if(Cookies.get("ei_selected_guild") === undefined){
         fetchUrl = restAPIUrl + "user-guilds/";
         axios.get(fetchUrl).then(function (response) {
             let data = response.data;
+            $(".modal-body div").empty();
 
             if (data.length > 1){
                 for (let i = 0; i < data.length; i++) {
-                    $(".modal-body").append(data[i].guild_name);
+                    let guild_list_item = `<button onclick="guildSelectionClick(value)" class="list-group-item list-group-item-action" value="${data[i].guild_name}">${data[i].guild_name}</button>`;
+                    $(".modal-body div").append(guild_list_item);
                 }
     
                 openGuildSelectionModal();
@@ -23,9 +27,14 @@ function checkGuildCookie() {
     }
 }
 
+function guildSelectionClick(data) {
+    Cookies.set("ei_selected_guild", data);
+    guildSelectorModal.hide();
+}
+
 function openGuildSelectionModal() {
     let modalOptions = {keyboard: true, focus:true, backdrop: 'static'}
-    let guildSelectorModal = new bootstrap.Modal(document.getElementById('guild-selector-modal'), modalOptions);
+    guildSelectorModal = new bootstrap.Modal(document.getElementById('guild-selector-modal'), modalOptions);
     guildSelectorModal.show();
 }
 

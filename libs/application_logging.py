@@ -1,5 +1,7 @@
+import sys
 import os
 import logging
+from pathlib import Path
 
 
 def init_logger(logger_name: str = None):
@@ -13,15 +15,15 @@ def init_logger(logger_name: str = None):
     else:
         # Create a custom logger
         logger = logging.getLogger(logger_name)
-        log_file_path = os.path.join(os.path.dirname(__file__), f"logs/{logger_name}.log")
+        log_file_path = os.path.join(Path.resolve(__file__).parent.parent, f"logs/{logger_name}.log")
 
         # check if loggin dir exists else create it
-        if not os.path.exists(os.path.join(os.path.dirname(__file__), "logs")):
-            os.mkdir(os.path.join(os.path.dirname(__file__), "logs"))
+        if not os.path.exists(os.path.join(Path.resolve(__file__).parent.parent, "logs")):
+            os.mkdir(os.path.join(Path.resolve(__file__).parent.parent, "logs"))
 
         # Create handlers
         logger.setLevel(logging.INFO)
-        c_handler = logging.StreamHandler()
+        c_handler = logging.StreamHandler(sys.stdout)
         f_handler = logging.FileHandler(log_file_path)
 
         # Create formatters and add it to handlers

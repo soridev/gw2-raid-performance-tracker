@@ -16,10 +16,11 @@ gw2_raid_performance_tracker = Celery("tasks", broker=rabbitmq_connection_string
 
 
 @gw2_raid_performance_tracker.task
-def generate_evtc_raw_data(input_file_name: str, file_path: str, settings_file: str):
+def generate_evtc_raw_data(file_path: str, settings_file: str):
     """Generates a .json file from an .evtc log by calling the c# application GuildWars2EliteInsights.exe through mono on linux. yes i know. :-)"""
-
+    
     logger = init_logger()
+    input_file_name = str.split(os.path.basename(file_path), ".")[0]
 
     def find_file_by_name(name, path):
         result = []
@@ -32,6 +33,7 @@ def generate_evtc_raw_data(input_file_name: str, file_path: str, settings_file: 
 
     ei_binary = ConfigHelper().get_config_item("elite-insights", "binary")
     outfolder = ConfigHelper().get_config_item("elite-insights", "outfolder")
+    archive = ConfigHelper().get_config_item("elite-insights", "archive")
     cmd = f"mono {ei_binary} -p -c {settings_file} {file_path}"
     basename = os.path.basename(file_path)
 

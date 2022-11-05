@@ -2,13 +2,14 @@ import os
 import configparser
 
 from json import loads
+from pathlib import Path
 
 from django.urls import conf
 
 
 class ConfigHelper:
     def __init__(self) -> None:
-        self.base_path = os.path.dirname(__file__)
+        self.base_path = Path(__file__).parent.parent
         self.config_parser = configparser.ConfigParser()
         self.config_file_path = os.path.join(self.base_path, "config/config.ini")
 

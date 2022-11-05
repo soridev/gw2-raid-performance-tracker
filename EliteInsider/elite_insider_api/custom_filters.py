@@ -1,7 +1,7 @@
 import psycopg2
 import psycopg2.extras
 from typing import List, Dict
-from EliteInsider.config_helper import ConfigHelper
+from config_helper import ConfigHelper
 
 
 class EICustomFilters:

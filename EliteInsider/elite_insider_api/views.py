@@ -1,5 +1,7 @@
-from cmath import log
+import os
+import shutil
 from django.http import HttpResponse
+from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -9,6 +11,9 @@ from rest_framework import permissions
 from .custom_filters import EICustomFilters
 from .serializers import *
 
+# import celery tasks
+from celery import chain
+from tasks import generate_evtc_raw_data, json_to_rdbms
 
 class RaidKillTimesView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -194,6 +199,16 @@ class UploadView(APIView):
         fs = FileSystemStorage()
         given_file = request.FILES["file"]        
         file_name = fs.save(given_file.name, given_file)
+
+        source = os.path.join(settings.MEDIA_ROOT, file_name)
+        target = os.path.join(settings.LOG_LANDINGZONE, file_name)
+
+        # move file to landingzone
+        shutil.move(source, target)
+
+        # trigger log handling in celery
+        chain(generate_evtc_raw_data.s(file_path=target, settings_file=settings.EI_SETTINGS_FILE),
+            json_to_rdbms.s()).apply_async()
 
         response = "Upload successful."
         return Response(response)
